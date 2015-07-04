@@ -15,19 +15,22 @@ public class BetaSimilarity
         Similarity = similarity;
         //Ensuring that beta will be positive
         _b = Math.exp(_beta.Value);
-        BetaSimilarityMeasure = new Unit(_b * Similarity.Similarity.Value);
+
+        BetaSimilarityMeasure = (similarity != null) ?
+                new Unit(_b * similarity.Similarity.Value)
+                :
+                new Unit(0);
     }
 
     public BetaSimilarity() {
-        _beta = new Unit(0.0);
-        BetaSimilarityMeasure = new Unit(0.0);
+        this(new Unit(0), null);
     }
 
     public void backwardErrorPropagation() {
         Unit similarity = Similarity.Similarity;
-        double betaGradient = BetaSimilarityMeasure.Gradient;
-        _beta.Gradient += similarity.Value * _b * betaGradient;
-        similarity.Gradient += _b * betaGradient;
+        double betaGradient = BetaSimilarityMeasure.gradient;
+        _beta.gradient += similarity.Value * _b * betaGradient;
+        similarity.gradient += _b * betaGradient;
     }
 
     public static BetaSimilarity[][] getTensor2(int x, int y) {

@@ -2,13 +2,13 @@ package NTM2.Learning;
 
 import NTM2.Controller.Unit;
 
-public abstract class WeightUpdaterBase   implements IWeightUpdater
-{
-    public abstract void reset();
+public interface WeightUpdaterBase extends IWeightUpdater {
+    //abstract void reset();
 
-    public abstract void updateWeight(Unit data);
+    //abstract void updateWeight(Unit data);
 
-    public void updateWeight(Unit[] data) {
+    @Override
+    default void updateWeight(Unit[] data) {
         for (Object __dummyForeachVar0 : data)
         {
             Unit unit = (Unit)__dummyForeachVar0;
@@ -16,7 +16,8 @@ public abstract class WeightUpdaterBase   implements IWeightUpdater
         }
     }
 
-    public void updateWeight(Unit[][] data) {
+    @Override
+    default void updateWeight(Unit[][] data) {
         for (Object __dummyForeachVar1 : data)
         {
             Unit[] units = (Unit[])__dummyForeachVar1;
@@ -24,7 +25,8 @@ public abstract class WeightUpdaterBase   implements IWeightUpdater
         }
     }
 
-    public void updateWeight(Unit[][][] data) {
+    @Override
+    default void updateWeight(Unit[][][] data) {
         for (Object __dummyForeachVar2 : data)
         {
             Unit[][] units = (Unit[][])__dummyForeachVar2;

@@ -6,13 +6,14 @@ package NTM2.Learning;
 
 import NTM2.Controller.Unit;
 
-public class GradientResetter  extends WeightUpdaterBase 
-{
+public class GradientResetter implements WeightUpdaterBase {
+    @Override
     public void reset() {
     }
 
+    @Override
     public void updateWeight(Unit data) {
-        data.Gradient = 0;
+        data.gradient = 0;
     }
 
 }

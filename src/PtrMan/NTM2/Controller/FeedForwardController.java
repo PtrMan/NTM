@@ -5,53 +5,53 @@ import NTM2.Memory.ReadData;
 
 public class FeedForwardController   
 {
-    public final HiddenLayer HiddenLayer;
-    public final OutputLayer OutputLayer;
+    public final HiddenLayer hidden;
+    public final OutputLayer output;
+
     public FeedForwardController(int controllerSize, int inputSize, int outputSize, int headCount, int memoryUnitSizeM) {
-        HiddenLayer = new HiddenLayer(controllerSize,inputSize,headCount,memoryUnitSizeM);
-        OutputLayer = new OutputLayer(outputSize,controllerSize,headCount,memoryUnitSizeM);
+        this(new HiddenLayer(controllerSize,inputSize,headCount,memoryUnitSizeM),
+                new OutputLayer(outputSize,controllerSize,headCount,memoryUnitSizeM));
     }
 
-    private FeedForwardController(HiddenLayer hiddenLayer, OutputLayer outputLayer) {
-        HiddenLayer = hiddenLayer;
-        OutputLayer = outputLayer;
+    private FeedForwardController(HiddenLayer hidden, OutputLayer output) {
+        this.hidden = hidden;
+        this.output = output;
     }
 
     public double[] getOutput() {
-        return OutputLayer.getOutput();
+        return output.getOutput();
     }
 
+    @Override
     public FeedForwardController clone() {
-        try
-        {
-            HiddenLayer newHiddenLayer = HiddenLayer.clone();
-            OutputLayer newOutputLayer = OutputLayer.clone();
-            return new FeedForwardController(newHiddenLayer,newOutputLayer);
-        }
-        catch (RuntimeException __dummyCatchVar0)
-        {
-            throw __dummyCatchVar0;
-        }
-        catch (Exception __dummyCatchVar0)
-        {
-            throw new RuntimeException(__dummyCatchVar0);
-        }
-    
+//        try
+//        {
+            return new FeedForwardController(hidden.clone(), output.clone());
+//        }
+//        catch (RuntimeException __dummyCatchVar0)
+//        {
+//            throw __dummyCatchVar0;
+//        }
+//        catch (Exception __dummyCatchVar0)
+//        {
+//            throw new RuntimeException(__dummyCatchVar0);
+//        }
+//
     }
 
     public void process(double[] input, ReadData[] readDatas) {
-        HiddenLayer.forwardPropagation(input, readDatas);
-        OutputLayer.forwardPropagation(HiddenLayer);
+        hidden.forwardPropagation(input, readDatas);
+        output.forwardPropagation(hidden);
     }
 
     public void updateWeights(IWeightUpdater weightUpdater) {
-        OutputLayer.updateWeights(weightUpdater);
-        HiddenLayer.updateWeights(weightUpdater);
+        output.updateWeights(weightUpdater);
+        hidden.updateWeights(weightUpdater);
     }
 
     public void backwardErrorPropagation(double[] knownOutput, double[] input, ReadData[] reads) {
-        OutputLayer.backwardErrorPropagation(knownOutput, HiddenLayer);
-        HiddenLayer.backwardErrorPropagation(input, reads);
+        output.backwardErrorPropagation(knownOutput, hidden);
+        hidden.backwardErrorPropagation(input, reads);
     }
 
 }

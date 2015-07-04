@@ -29,7 +29,7 @@ public class ContentAddressing
         }
         for (Object __dummyForeachVar0 : ContentVector) {
             Unit unit = (Unit)__dummyForeachVar0;
-            unit.Value = unit.Value / sum;
+            unit.Value /= sum;
         }
     }
 
@@ -38,11 +38,11 @@ public class ContentAddressing
         for (Object __dummyForeachVar1 : ContentVector)
         {
             Unit unit = (Unit)__dummyForeachVar1;
-            gradient += unit.Gradient * unit.Value;
+            gradient += unit.gradient * unit.Value;
         }
         for (int i = 0;i < ContentVector.length;i++)
         {
-            BetaSimilarities[i].BetaSimilarityMeasure.Gradient += (ContentVector[i].Gradient - gradient) * ContentVector[i].Value;
+            BetaSimilarities[i].BetaSimilarityMeasure.gradient += (ContentVector[i].gradient - gradient) * ContentVector[i].Value;
         }
     }
 

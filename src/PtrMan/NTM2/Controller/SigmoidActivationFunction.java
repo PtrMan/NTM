@@ -11,10 +11,12 @@ public class SigmoidActivationFunction   implements IDifferentiableFunction
         _alpha = alpha;
     }
 
+    @Override
     public double value(double x) {
         return 1.0 / (1.0 + Math.exp(-x * _alpha));
     }
 
+    @Override
     public double derivative(double y) {
         return (_alpha * y * (1.0 - y));
     }

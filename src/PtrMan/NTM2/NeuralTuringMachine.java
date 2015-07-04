@@ -6,37 +6,46 @@ import NTM2.Memory.Addressing.Head;
 import NTM2.Memory.MemoryState;
 import NTM2.Memory.NTMMemory;
 
-public final class NeuralTuringMachine implements INeuralTuringMachine
+public class NeuralTuringMachine implements INeuralTuringMachine
 {
-    private final FeedForwardController _controller;
-    private final NTMMemory _memory;
-    private MemoryState _oldMemoryState;
-    private MemoryState _newMemoryState;
+    public final FeedForwardController _controller;
+    public final NTMMemory _memory;
+    private MemoryState oldMemoryState;
+    private MemoryState newMemoryState;
     private double[] _lastInput;
     public NeuralTuringMachine(NeuralTuringMachine oldMachine) {
         _controller = oldMachine._controller.clone();
         _memory = oldMachine._memory;
-        _newMemoryState = oldMachine._newMemoryState;
-        _oldMemoryState = oldMachine._oldMemoryState;
+        newMemoryState = oldMachine.getNewMemoryState();
+        oldMemoryState = oldMachine.getOldMemoryState();
     }
 
-    public NeuralTuringMachine(int inputSize, int outputSize, int controllerSize, int headCount, int memoryColumnsN, int memoryRowsM, IWeightUpdater initializer) throws Exception {
+    public NeuralTuringMachine(int inputSize, int outputSize, int controllerSize, int headCount, int memoryColumnsN, int memoryRowsM, IWeightUpdater initializer) {
         _memory = new NTMMemory(memoryColumnsN,memoryRowsM,headCount);
         _controller = new FeedForwardController(controllerSize,inputSize,outputSize,headCount,memoryRowsM);
         updateWeights(initializer);
     }
 
+    @Override
     public void process(double[] input) {
         _lastInput = input;
-        _oldMemoryState = _newMemoryState;
-        _controller.process(input, _oldMemoryState.ReadData_);
-        _newMemoryState = _oldMemoryState.process(getHeads());
+        oldMemoryState = newMemoryState;
+        _controller.process(input, oldMemoryState.ReadData_);
+        newMemoryState = oldMemoryState.process(getHeads());
     }
 
+    @Override
     public double[] getOutput() {
         return _controller.getOutput();
     }
 
+    public MemoryState getNewMemoryState() {
+        return newMemoryState;
+    }
+
+    public MemoryState getOldMemoryState() {
+        return oldMemoryState;
+    }
     /*
     public void save(Stream stream) {
         DataContractJsonSerializer serializer = new DataContractJsonSerializer(NeuralTuringMachine.class);
@@ -64,25 +73,25 @@ public final class NeuralTuringMachine implements INeuralTuringMachine
     */
 
     public Head[] getHeads() {
-        return _controller.OutputLayer.HeadsNeurons;
+        return _controller.output.HeadsNeurons;
     }
 
     public void initializeMemoryState() {
-        _newMemoryState = new MemoryState(_memory);
-        _newMemoryState.doInitialReading();
-        _oldMemoryState = null;
+        newMemoryState = new MemoryState(_memory);
+        newMemoryState.doInitialReading();
+        oldMemoryState = null;
     }
 
     public void backwardErrorPropagation(double[] knownOutput) {
-        _newMemoryState.backwardErrorPropagation();
-        _controller.backwardErrorPropagation(knownOutput, _lastInput, _oldMemoryState.ReadData_);
+        newMemoryState.backwardErrorPropagation();
+        _controller.backwardErrorPropagation(knownOutput, _lastInput, oldMemoryState.ReadData_);
     }
 
     public void backwardErrorPropagation() {
-        _newMemoryState.backwardErrorPropagation2();
+        newMemoryState.backwardErrorPropagation2();
     }
 
-    public void updateWeights(IWeightUpdater weightUpdater) {
+    public final void updateWeights(IWeightUpdater weightUpdater) {
         _memory.updateWeights(weightUpdater);
         _controller.updateWeights(weightUpdater);
     }

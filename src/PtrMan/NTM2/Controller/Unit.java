@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 public class Unit   
 {
     public double Value;
-    public double Gradient;
+    public double gradient;
     public Unit(double value) {
         Value = value;
     }
@@ -13,7 +13,7 @@ public class Unit
     public String toString() {
         try
         {
-            return String.format("Value: {0:0.000}, Gradient: {1:0.000}", Value, Gradient);
+            return String.format("Value: {0:0.000}, Gradient: {1:0.000}", Value, gradient);
         }
         catch (RuntimeException __dummyCatchVar0)
         {

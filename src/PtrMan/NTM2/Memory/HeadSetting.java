@@ -11,32 +11,42 @@ import java.util.stream.IntStream;
 
 public class HeadSetting   
 {
-    public Unit[] AddressingVector;
-    public ShiftedAddressing ShiftedVector;
+    public final Unit[] addressingVector;
+    public ShiftedAddressing shiftedAddressing;
     private Unit _gamma;
     private double _gammaIndex;
-    private int _cellCount;
-    private Unit[] _shiftedVector;
-    public HeadSetting(Unit gamma, ShiftedAddressing shiftedVector) {
+
+
+    public Unit[] getShiftedVector() {
+        return shiftedAddressing.shiftedVector;
+    }
+
+    public HeadSetting(Unit gamma, ShiftedAddressing shiftedAddressing) {
         _gamma = gamma;
-        ShiftedVector = shiftedVector;
-        _shiftedVector = ShiftedVector.ShiftedVector;
-        _cellCount = _shiftedVector.length;
-        AddressingVector = UnitFactory.getVector(_cellCount);
+
+        this.shiftedAddressing = shiftedAddressing;
+
+
+
+        final int cellCount = getShiftedVector().length;
+        addressingVector = UnitFactory.getVector(cellCount);
         //NO CLUE IN PAPER HOW TO IMPLEMENT - ONLY RESTRICTION IS THAT IT HAS TO BE LARGER THAN 1
         //(Page 9, Part 3.3.2. Focusing by location)
         _gammaIndex = Math.log(Math.exp(gamma.Value) + 1.0) + 1.0;
+
+
+        final Unit[] sv = getShiftedVector();
         double sum = 0.0;
-        for (int i = 0;i < _cellCount;i++) {
-            Unit unit = AddressingVector[i];
-            unit.Value = Math.pow(_shiftedVector[i].Value, _gammaIndex);
+        for (int i = 0;i < cellCount; i++) {
+            Unit unit = addressingVector[i];
+            unit.Value = Math.pow(sv[i].Value, _gammaIndex);
             sum += unit.Value;
         }
-        for (Object __dummyForeachVar0 : AddressingVector) {
+
+        for (Object __dummyForeachVar0 : addressingVector) {
             Unit unit = (Unit)__dummyForeachVar0;
-            unit.Value = unit.Value / sum;
-            if (Double.isNaN(unit.Value))
-            {
+            unit.Value /= sum;
+            if (Double.isNaN(unit.Value)) {
                 throw new RuntimeException("Should not be NaN - Error");
             }
              
@@ -44,60 +54,72 @@ public class HeadSetting
     }
 
     public HeadSetting(int memoryColumnsN, ContentAddressing contentAddressing) {
-        AddressingVector = UnitFactory.getVector(memoryColumnsN);
-        for (int i = 0;i < memoryColumnsN;i++)
-        {
-            AddressingVector[i].Value = contentAddressing.ContentVector[i].Value;
+
+        this.shiftedAddressing = null;
+
+        addressingVector = UnitFactory.getVector(memoryColumnsN);
+
+        for (int i = 0;i < memoryColumnsN;i++) {
+            addressingVector[i].Value = contentAddressing.ContentVector[i].Value;
         }
     }
 
     public void backwardErrorPropagation() {
-        double[] lns = new double[_cellCount];
-        double[] temps = new double[_cellCount];
-        double lnexp = 0;
-        double s = 0;
-        double gradient2 = 0;
 
-        IntStream.range(0, _cellCount).forEach(i -> {
-            Unit weight = _shiftedVector[i];
+        final Unit[] sv = getShiftedVector();
+        final int cells = sv.length;
+
+        double[] lns = new double[cells];
+        double[] temps = new double[cells];
+
+
+        IntStream.range(0, cells).forEach(i -> {
+            Unit weight = sv[i];
             double weightValue = weight.Value;
             if (weightValue < EPSILON) {
                 return;
             }
 
             double gradient = 0;
-            for (int j = 0; j < _cellCount; j++) {
-                Unit dataWeight = AddressingVector[j];
+            for (int j = 0; j < cells; j++) {
+                Unit dataWeight = addressingVector[j];
                 double dataWeightValue = dataWeight.Value;
-                double dataWeightGradient = dataWeight.Gradient;
+                double dataWeightGradient = dataWeight.gradient;
                 if (i == j) {
                     gradient += dataWeightGradient * (1 - dataWeightValue);
                 } else {
                     gradient -= dataWeightGradient * dataWeightValue;
                 }
             }
-            gradient = ((gradient * _gammaIndex) / weightValue) * AddressingVector[i].Value;
-            weight.Gradient += gradient;
+            gradient = ((gradient * _gammaIndex) / weightValue) * addressingVector[i].Value;
+            weight.gradient += gradient;
             //******************************************************************
             lns[i] = Math.log(weightValue);
             temps[i] = Math.pow(weightValue, _gammaIndex);
         });
 
-        for (int i = 0;i < _cellCount;i++) {
+        double s = 0;
+        double lnexp = 0;
+        for (int i = 0;i < cells;i++) {
             lnexp += lns[i] * temps[i];
             s += temps[i];
         }
         double lnexps = lnexp / s;
-        for (int i = 0;i < _cellCount;i++) {
-            if (_shiftedVector[i].Value < EPSILON) {
+        double gradient2 = 0;
+
+
+
+        for (int i = 0;i < cells;i++) {
+
+            if (sv[i].Value < EPSILON) {
                 continue;
             }
              
-            Unit dataWeight = AddressingVector[i];
-            gradient2 += dataWeight.Gradient * (dataWeight.Value * (lns[i] - lnexps));
+            Unit dataWeight = addressingVector[i];
+            gradient2 += dataWeight.gradient * (dataWeight.Value * (lns[i] - lnexps));
         }
-        gradient2 = gradient2 / (1 + Math.exp(-_gamma.Value));
-        _gamma.Gradient += gradient2;
+        gradient2 /= (1 + Math.exp(-_gamma.Value));
+        _gamma.gradient += gradient2;
     }
 
     public static HeadSetting[] getVector(int x, Function<Integer, Pair<Integer, ContentAddressing>> paramGetter) {

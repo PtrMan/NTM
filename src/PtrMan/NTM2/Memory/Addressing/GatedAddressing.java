@@ -8,14 +8,14 @@ import NTM2.Memory.HeadSetting;
 
 public class GatedAddressing   
 {
-    private final Unit _gate;
-    private final HeadSetting _oldHeadSettings;
+    public final Unit _gate;
+    public final HeadSetting _oldHeadSettings;
     public final ContentAddressing ContentVector;
     public final Unit[] GatedVector;
-    private final int _memoryCellCount;
+    public final int _memoryCellCount;
     //Interpolation gate
-    private final double _gt;
-    private final double _oneminusgt;
+    public final double _gt;
+    public final double _oneminusgt;
 
     public GatedAddressing(Unit gate, ContentAddressing contentAddressing, HeadSetting oldHeadSettings) {
         _gate = gate;
@@ -29,7 +29,7 @@ public class GatedAddressing
         _oneminusgt = (1 - _gt);
         for (int i = 0;i < _memoryCellCount;i++)
         {
-            GatedVector[i].Value = (_gt * contentVector[i].Value) + (_oneminusgt * _oldHeadSettings.AddressingVector[i].Value);
+            GatedVector[i].Value = (_gt * contentVector[i].Value) + (_oneminusgt * _oldHeadSettings.addressingVector[i].Value);
         }
     }
 
@@ -38,14 +38,14 @@ public class GatedAddressing
         double gradient = 0;
         for (int i = 0;i < _memoryCellCount;i++)
         {
-            Unit oldHeadSetting = _oldHeadSettings.AddressingVector[i];
+            Unit oldHeadSetting = _oldHeadSettings.addressingVector[i];
             Unit contentVectorItem = contentVector[i];
             Unit gatedVectorItem = GatedVector[i];
-            gradient += (contentVectorItem.Value - oldHeadSetting.Value) * gatedVectorItem.Gradient;
-            contentVectorItem.Gradient += _gt * gatedVectorItem.Gradient;
-            oldHeadSetting.Gradient += _oneminusgt * gatedVectorItem.Gradient;
+            gradient += (contentVectorItem.Value - oldHeadSetting.Value) * gatedVectorItem.gradient;
+            contentVectorItem.gradient += _gt * gatedVectorItem.gradient;
+            oldHeadSetting.gradient += _oneminusgt * gatedVectorItem.gradient;
         }
-        _gate.Gradient += gradient * _gt * _oneminusgt;
+        _gate.gradient += gradient * _gt * _oneminusgt;
     }
 
 }

@@ -43,10 +43,10 @@ public class MemoryState
         {
             HeadSetting headSetting = (HeadSetting)__dummyForeachVar2;
             headSetting.backwardErrorPropagation();
-            headSetting.ShiftedVector.backwardErrorPropagation();
-            headSetting.ShiftedVector.GatedAddressing.backwardErrorPropagation();
-            headSetting.ShiftedVector.GatedAddressing.ContentVector.backwardErrorPropagation();
-            for (Object __dummyForeachVar1 : headSetting.ShiftedVector.GatedAddressing.ContentVector.BetaSimilarities)
+            headSetting.shiftedAddressing.backwardErrorPropagation();
+            headSetting.shiftedAddressing.GatedAddressing.backwardErrorPropagation();
+            headSetting.shiftedAddressing.GatedAddressing.ContentVector.backwardErrorPropagation();
+            for (Object __dummyForeachVar1 : headSetting.shiftedAddressing.GatedAddressing.ContentVector.BetaSimilarities)
             {
                 BetaSimilarity similarity = (BetaSimilarity)__dummyForeachVar1;
                 similarity.backwardErrorPropagation();
@@ -58,8 +58,8 @@ public class MemoryState
     public void backwardErrorPropagation2() {
         for (int i = 0;i < ReadData_.length;i++) {
             ReadData_[i].backwardErrorPropagation();
-            for (int j = 0;j < ReadData_[i].HeadSetting.AddressingVector.length;j++) {
-                _contentAddressings[i].ContentVector[j].Gradient += ReadData_[i].HeadSetting.AddressingVector[j].Gradient;
+            for (int j = 0;j < ReadData_[i].HeadSetting.addressingVector.length;j++) {
+                _contentAddressings[i].ContentVector[j].gradient += ReadData_[i].HeadSetting.addressingVector[j].gradient;
             }
             _contentAddressings[i].backwardErrorPropagation();
         }

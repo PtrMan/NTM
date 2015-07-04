@@ -52,7 +52,7 @@ public class OutputLayer
             for (int j = 0;j < _controllerSize;j++)
             {
                 //Foreach input from hidden layer
-                sum += weights[j].Value * hiddenLayer.HiddenLayerNeurons[j].Value;
+                sum += weights[j].Value * hiddenLayer.neurons[j].Value;
             }
             //Plus threshold
             sum += weights[_controllerSize].Value;
@@ -70,7 +70,7 @@ public class OutputLayer
                 for (int k = 0;k < _controllerSize;k++)
                 {
                     //Foreach input from hidden layer
-                    sum += headWeights[k].Value * hiddenLayer.HiddenLayerNeurons[k].Value;
+                    sum += headWeights[k].Value * hiddenLayer.neurons[k].Value;
                 }
                 //Plus threshold
                 sum += headWeights[_controllerSize].Value;
@@ -79,6 +79,7 @@ public class OutputLayer
         }
     }
 
+    @Override
     public OutputLayer clone() {
         try
         {
@@ -101,7 +102,7 @@ public class OutputLayer
         for (int j = 0;j < _outputSize;j++)
         {
             //Delta
-            OutputLayerNeurons[j].Gradient = OutputLayerNeurons[j].Value - knownOutput[j];
+            OutputLayerNeurons[j].gradient = OutputLayerNeurons[j].Value - knownOutput[j];
         }
         for (int j = 0;j < _outputSize;j++)
         {
@@ -110,7 +111,7 @@ public class OutputLayer
             Unit[] weights = _hiddenToOutputLayerWeights[j];
             for (int i = 0;i < _controllerSize;i++)
             {
-                hiddenLayer.HiddenLayerNeurons[i].Gradient += weights[i].Value * unit.Gradient;
+                hiddenLayer.neurons[i].gradient += weights[i].Value * unit.gradient;
             }
         }
         for (int j = 0;j < _headCount;j++)
@@ -124,7 +125,7 @@ public class OutputLayer
                 Unit[] weightsK = weights[k];
                 for (int i = 0;i < _controllerSize;i++)
                 {
-                    hiddenLayer.HiddenLayerNeurons[i].Gradient += unit.Gradient * weightsK[i].Value;
+                    hiddenLayer.neurons[i].gradient += unit.gradient * weightsK[i].Value;
                 }
             }
         }
@@ -132,12 +133,12 @@ public class OutputLayer
         {
             //Wyh1 error backpropagation
             Unit[] wyh1I = _hiddenToOutputLayerWeights[i];
-            double yGrad = OutputLayerNeurons[i].Gradient;
+            double yGrad = OutputLayerNeurons[i].gradient;
             for (int j = 0;j < _controllerSize;j++)
             {
-                wyh1I[j].Gradient += yGrad * hiddenLayer.HiddenLayerNeurons[j].Value;
+                wyh1I[j].gradient += yGrad * hiddenLayer.neurons[j].Value;
             }
-            wyh1I[_controllerSize].Gradient += yGrad;
+            wyh1I[_controllerSize].gradient += yGrad;
         }
         for (int i = 0;i < _headCount;i++)
         {
@@ -151,10 +152,10 @@ public class OutputLayer
                 Unit[] wuh1ij = units[j];
                 for (int k = 0;k < _controllerSize;k++)
                 {
-                    Unit unit = hiddenLayer.HiddenLayerNeurons[k];
-                    wuh1ij[k].Gradient += headUnit.Gradient * unit.Value;
+                    Unit unit = hiddenLayer.neurons[k];
+                    wuh1ij[k].gradient += headUnit.gradient * unit.Value;
                 }
-                wuh1ij[_controllerSize].Gradient += headUnit.Gradient;
+                wuh1ij[_controllerSize].gradient += headUnit.gradient;
             }
         }
     }

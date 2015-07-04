@@ -7,14 +7,14 @@ import java.util.function.Function;
 
 public class Head   
 {
-    private Unit[] _eraseVector;
-    private Unit[] _addVector;
-    private Unit[] _keyVector;
-    private Unit _beta;
-    private Unit _gate;
-    private Unit _shift;
-    private Unit _gama;
-    private int _memoryRowSize;
+    private final Unit[] _eraseVector;
+    private final Unit[] _addVector;
+    private final Unit[] _keyVector;
+    private final Unit _beta;
+    private final Unit _gate;
+    private final Unit _shift;
+    private final Unit _gama;
+    private final int _memoryRowSize;
     //M
     public Unit[] getKeyVector() {
         return _keyVector;

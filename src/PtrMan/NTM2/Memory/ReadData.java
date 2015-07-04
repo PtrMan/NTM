@@ -22,7 +22,7 @@ public class ReadData
         for (int i = 0;i < _cellSize;i++) {
             double temp = 0;
             for (int j = 0;j < _cellCount;j++) {
-                temp += headSetting.AddressingVector[j].Value * controllerMemory.Data[j][i].Value;
+                temp += headSetting.addressingVector[j].Value * controllerMemory.Data[j][i].Value;
             }
             //if (double.IsNaN(temp))
             //{
@@ -36,14 +36,14 @@ public class ReadData
         for (int i = 0;i < _cellCount;i++) {
             double gradient = 0;
             Unit[] dataVector = _controllerMemory.Data[i];
-            Unit addressingVectorUnit = HeadSetting.AddressingVector[i];
+            Unit addressingVectorUnit = HeadSetting.addressingVector[i];
             for (int j = 0;j < _cellSize;j++) {
-                double readUnitGradient = ReadVector[j].Gradient;
+                double readUnitGradient = ReadVector[j].gradient;
                 Unit dataUnit = dataVector[j];
                 gradient += readUnitGradient * dataUnit.Value;
-                dataUnit.Gradient += readUnitGradient * addressingVectorUnit.Value;
+                dataUnit.gradient += readUnitGradient * addressingVectorUnit.Value;
             }
-            addressingVectorUnit.Gradient += gradient;
+            addressingVectorUnit.gradient += gradient;
         }
     }
 

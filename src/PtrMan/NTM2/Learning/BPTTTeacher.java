@@ -16,6 +16,7 @@ public class BPTTTeacher implements INTMTeacher
         _gradientResetter = new GradientResetter();
     }
 
+    @Override
     public List<double[]> train(double[][] input, double[][] knownOutput) {
         NeuralTuringMachine[] machines = trainInternal(input, knownOutput);
         return getMachineOutputs(machines);
@@ -51,11 +52,9 @@ public class BPTTTeacher implements INTMTeacher
         return machines;
     }
 
-    private List<double[]> getMachineOutputs(NeuralTuringMachine[] machines) {
-        List<double[]> realOutputs = new ArrayList<>();
-        for (int i = 0;i < machines.length;i++)
-        {
-            NeuralTuringMachine machine = machines[i];
+    private static List<double[]> getMachineOutputs(NeuralTuringMachine[] machines) {
+        List<double[]> realOutputs = new ArrayList<>(machines.length);
+        for (NeuralTuringMachine machine : machines) {
             realOutputs.add(machine.getOutput());
         }
         return realOutputs;
