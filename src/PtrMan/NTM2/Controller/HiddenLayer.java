@@ -90,7 +90,7 @@ public class HiddenLayer
             ReadData read = readData[headIndex];
             for (int memoryCellIndex = 0;memoryCellIndex < memoryUnitSizeM;memoryCellIndex++)
             {
-                tempSum += headWeights[memoryCellIndex].value * read.ReadVector[memoryCellIndex].value;
+                tempSum += headWeights[memoryCellIndex].value * read.read[memoryCellIndex].value;
             }
         }
         return tempSum;
@@ -150,8 +150,8 @@ public class HiddenLayer
                 ReadData readData = reads[headIndex];
                 Unit[] neuronToHeadReadDataWeights = neuronToReadDataWeights[headIndex];
                 for (int memoryCellIndex = 0;memoryCellIndex < memoryUnitSizeM;memoryCellIndex++) {
-                    readData.ReadVector[memoryCellIndex].grad += hiddenLayerGradient * neuronToHeadReadDataWeights[memoryCellIndex].value;
-                    neuronToHeadReadDataWeights[memoryCellIndex].grad += hiddenLayerGradient * readData.ReadVector[memoryCellIndex].value;
+                    readData.read[memoryCellIndex].grad += hiddenLayerGradient * neuronToHeadReadDataWeights[memoryCellIndex].value;
+                    neuronToHeadReadDataWeights[memoryCellIndex].grad += hiddenLayerGradient * readData.read[memoryCellIndex].value;
                 }
             }
         }

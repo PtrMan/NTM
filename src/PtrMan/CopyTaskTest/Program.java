@@ -8,7 +8,7 @@ import NTM2.Memory.Addressing.Head;
 import NTM2.NeuralTuringMachine;
 import org.javatuples.Pair;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Program   
@@ -18,8 +18,10 @@ public class Program
     }
 
     static void Main() {
-        double[] errors = new double[100];
-        for (int i = 0;i < 100;i++)
+        final int displayEvery = 4;
+
+        double[] errors = new double[displayEvery];
+        for (int i = 0;i < displayEvery;i++)
         {
             errors[i] = 1.0;
         }
@@ -30,7 +32,7 @@ public class Program
 
         final int vectorSize = 8;
 
-        System.out.println(seed);
+        System.out.println("RNG Seed: " + seed);
 
         //TODO remove rand
         final int memoryWidth = 20;
@@ -45,23 +47,35 @@ public class Program
         final int outputSize = vectorSize;
         final int inputSize = vectorSize + 2;
         int weightsCount = (headsCount * memoryN) + (memoryN * memoryWidth) + (controllerSize * headsCount * memoryWidth) + (controllerSize * inputSize) + (controllerSize)+(outputSize * (controllerSize + 1)) + (headsCount * headUnitSize * (controllerSize + 1));
-        System.out.println(weightsCount);
+        System.out.println("# Weights: "  + weightsCount);
         RMSPropWeightUpdater rmsPropWeightUpdater = new RMSPropWeightUpdater(weightsCount, 0.95, 0.5, 0.001, 0.001);
         //NeuralTuringMachine machine2 = NeuralTuringMachine.Load(@"NTM2015-03-22T210312");
         INTMTeacher teacher = new BPTTTeacher(machine, rmsPropWeightUpdater);
-        long[] times = new long[100];
-        for (int i = 1;i < 10000;i++) {
+
+
+
+        double[] times = new double[displayEvery];
+
+        for (int i = 0; i < 10000;i++) {
+
             Pair<double[][], double[][]> sequence = SequenceGenerator.generateSequence(rand.nextInt(20) + 1, vectorSize);
+
             long timeBefore = System.nanoTime();
-            List<double[]> machinesOutput = teacher.train(sequence.getValue0(), sequence.getValue1());
-            long timeAfter = System.nanoTime();
-            times[i % 100] = (timeAfter - timeBefore) / 1000000L;
-            double error = calculateLogLoss(sequence.getValue1(), machinesOutput);
-            double averageError = error / (sequence.getValue1().length * sequence.getValue1()[0].length);
-            errors[i % 100] = averageError;
-             
-            if (i % 100 == 0) {
-                System.out.format("Iteration: %d, average error: %f, iterations per second: %f", i, getAverageError(errors), /*1000 / times.Average()*/ 0.0);
+            NeuralTuringMachine[] machines = teacher.train(sequence.getValue0(), sequence.getValue1());
+            long trainTime = System.nanoTime() - timeBefore;
+
+            times[i % displayEvery] = trainTime;// / 1000000.0;
+
+            double error = calculateLogLoss(sequence.getValue1(), machines);
+            double averageError = error / (
+                    sequence.getValue1().length * sequence.getValue1()[0].length);
+
+            errors[i % displayEvery] = averageError;
+
+
+            if ((i+1) % displayEvery == 0) {
+                System.out.format("Iteration: %d        average error: %f       iteration time (s): %f", i,
+                        mean(errors), mean(times)/1.0e9);
                 System.out.println();
             }
              
@@ -71,33 +85,42 @@ public class Program
 
     final static double log2 = Math.log(2.0);
 
-    private static double calculateLogLoss(double[][] knownOutput, List<double[]> machinesOutput) {
+    private static double calculateLogLoss(double[][] knownOutput, NeuralTuringMachine[] machines) {
         double totalLoss = 0.0;
         int okt = knownOutput.length - ((knownOutput.length - 2) / 2);
-        for (int t = 0;t < knownOutput.length;t++)
-        {
-            for (int i = 0;i < knownOutput[t].length;i++)
-            {
-                double expected = knownOutput[t][i];
-                double real = machinesOutput.get(t)[i];
-                if (t >= okt) {
+        for (int t = 0; t < knownOutput.length;t++) {
 
-                    totalLoss += (expected * (Math.log(real)/ log2)) + ((1.0 - expected) * (Math.log(1.0 - real)/ log2));
-                }
+            if (t < okt) continue;
+
+            final double[] ideal = knownOutput[t];
+            final double[] actual = machines[t].getOutput();
+
+            System.out.println(t + ": " + Arrays.toString(ideal) + " =?= " + Arrays.toString(actual));
+
+            double rowLoss = 0;
+            for (int i = 0;i < ideal.length;i++) {
+
+                final double expected = ideal[i];
+                final double real = actual[i];
+
+
+                rowLoss += (expected * (Math.log(real)/ log2)) + ((1.0 - expected) * (Math.log(1.0 - real)/ log2));
+
                  
             }
+            totalLoss += rowLoss;
         }
         return -totalLoss;
     }
 
-    private static double getAverageError(double[] errors) {
+    private static double mean(double[] d) {
         double result = 0.0;
 
-        for( double val : errors ) {
+        for( double val : d ) {
             result += val;
         }
 
-        return result / errors.length;
+        return result / d.length;
     }
 
 }

@@ -8,37 +8,37 @@ import java.util.function.Function;
 public class ReadData   
 {
     public final HeadSetting HeadSetting;
-    public final Unit[] ReadVector;
-    private final NTMMemory _controllerMemory;
-    private final int _cellSize;
-    private final int _cellCount;
+    public final Unit[] read;
+    private final NTMMemory memory;
+    private final int cellSize;
+    private final int cells;
 
     public ReadData(HeadSetting headSetting, NTMMemory controllerMemory) {
         HeadSetting = headSetting;
-        _controllerMemory = controllerMemory;
-        _cellSize = _controllerMemory.memoryWidth;
-        _cellCount = _controllerMemory.memoryHeight;
-        ReadVector = new Unit[_cellSize];
-        for (int i = 0;i < _cellSize;i++) {
+        memory = controllerMemory;
+        cellSize = memory.memoryWidth;
+        cells = memory.memoryHeight;
+        read = new Unit[cellSize];
+        for (int i = 0;i < cellSize;i++) {
             double temp = 0.0;
-            for (int j = 0;j < _cellCount;j++) {
+            for (int j = 0;j < cells;j++) {
                 temp += headSetting.addressingVector[j].value * controllerMemory.data[j][i].value;
             }
             //if (double.IsNaN(temp))
             //{
             //    throw new Exception("Memory error");
             //}
-            ReadVector[i] = new Unit(temp);
+            read[i] = new Unit(temp);
         }
     }
 
     public void backwardErrorPropagation() {
-        for (int i = 0;i < _cellCount;i++) {
+        for (int i = 0;i < cells;i++) {
             double gradient = 0.0;
-            Unit[] dataVector = _controllerMemory.data[i];
+            Unit[] dataVector = memory.data[i];
             Unit addressingVectorUnit = HeadSetting.addressingVector[i];
-            for (int j = 0;j < _cellSize;j++) {
-                double readUnitGradient = ReadVector[j].grad;
+            for (int j = 0;j < cellSize;j++) {
+                double readUnitGradient = read[j].grad;
                 Unit dataUnit = dataVector[j];
                 gradient += readUnitGradient * dataUnit.value;
                 dataUnit.grad += readUnitGradient * addressingVectorUnit.value;

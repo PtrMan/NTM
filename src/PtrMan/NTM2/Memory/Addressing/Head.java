@@ -82,28 +82,29 @@ public class Head
         {
             return _addVector[i - width];
         }
-         
-        if (i < (width * 3))
+
+        final int width3 = width * 3;
+        if (i < width3)
         {
             return _keyVector[i - (2 * width)];
         }
          
-        if (i == (width * 3))
+        if (i == width3)
         {
             return _beta;
         }
          
-        if (i == (width * 3) + 1)
+        if (i == width3 + 1)
         {
             return _gate;
         }
          
-        if (i == (width * 3) + 2)
+        if (i == width3 + 2)
         {
             return _shift;
         }
          
-        if (i == (width * 3) + 3)
+        if (i == width3 + 3)
         {
             return _gama;
         }

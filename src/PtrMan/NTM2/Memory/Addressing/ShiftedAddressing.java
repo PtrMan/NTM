@@ -11,58 +11,84 @@ import NTM2.Controller.UnitFactory;
 public class ShiftedAddressing
 {
     private final Unit _shift;
-    private final Unit[] _gatedVector;
-    private final long _convolution;
-    private final int _cellCount;
-    private final double _simj;
-    private final double _oneMinusSimj;
-    private final double _shiftWeight;
+    private final Unit[] gated;
+    private final int conv;
+    private final int cells;
+    private final double simj;
+    private final double shiftWeight;
     public final GatedAddressing gatedAddressing;
-    public final Unit[] shiftedVector;
+    public final Unit[] shifted;
+
     //IMPLEMENTATION OF SHIFT - page 9
     public ShiftedAddressing(Unit shift, GatedAddressing gatedAddressing) {
         _shift = shift;
         this.gatedAddressing = gatedAddressing;
-        _gatedVector = this.gatedAddressing.GatedVector;
-        _cellCount = _gatedVector.length;
-        shiftedVector = UnitFactory.getVector(_cellCount);
-        double cellCountDbl = _cellCount;
+        gated = this.gatedAddressing.GatedVector;
+        cells = gated.length;
+        shifted = UnitFactory.getVector(cells);
+        double cellCountDbl = cells;
         //Max shift is from range -1 to 1
-        _shiftWeight = Sigmoid.getValue(_shift.value);
-        double maxShift = ((2.0 * _shiftWeight) - 1.0);
+        shiftWeight = Sigmoid.getValue(_shift.value);
+        double maxShift = ((2.0 * shiftWeight) - 1.0);
         double convolutionDbl = (maxShift + cellCountDbl) % cellCountDbl;
-        _simj = 1.0 - (convolutionDbl - Math.floor(convolutionDbl));
-        _oneMinusSimj = (1.0 - _simj);
-        _convolution = roundConvolution(convolutionDbl);
-        for (int i = 0;i < _cellCount;i++)
-        {
-            long imj = (i + _convolution) % _cellCount;
-            Unit vectorItem = shiftedVector[i];
-            vectorItem.value = (_gatedVector[(int)(imj % _cellCount)].value * _simj) +
-                    (_gatedVector[(int)((imj + 1) % _cellCount)].value * _oneMinusSimj);
-            if (vectorItem.value < 0.0 || Double.isNaN(vectorItem.value))
-            {
+        simj = 1.0 - (convolutionDbl - Math.floor(convolutionDbl));
+
+        final double oneMinusSimj = (1.0 - simj);
+
+        conv = convToInt(convolutionDbl);
+
+        for (int i = 0;i < cells;i++) {
+
+            /*
+            int imj = (i + _convolution) % _cellCount;
+
+            vectorItem.Value = (_gatedVector[imj].Value * _simj) +
+                   (_gatedVector[(imj + 1) % _cellCount].Value * oneMinusSimj);
+            */
+
+
+            int imj = (int)((i + conv) % cells);
+            Unit vectorItem = shifted[i];
+
+            double v = vectorItem.value = (gated[imj].value * simj) +
+                    (gated[(imj + 1) % cells].value * oneMinusSimj);
+
+            if (v < 0.0 || Double.isNaN(v)) {
                 throw new RuntimeException("Error - weight should not be smaller than zero or nan");
             }
              
         }
     }
 
-    public long roundConvolution(double c) {
-        return Math.round(c);
+    public int convToInt(double c) {
+        return (int)c;
     }
 
     public void backwardErrorPropagation() {
+
+        final double oneMinusSimj = (1.0 - simj);
+
         double gradient = 0.0;
-        for (int i = 0;i < _cellCount;i++)
-        {
-            Unit vectorItem = shiftedVector[i];
-            int imj = (int) ((i + (_convolution)) % _cellCount);
-            gradient += ((-_gatedVector[imj].value) + _gatedVector[(imj + 1) % _cellCount].value) * vectorItem.grad;
-            int j = (int) ((i - (_convolution)+_cellCount) % _cellCount);
-            _gatedVector[i].grad += (vectorItem.grad * _simj) + (shiftedVector[(j - 1 + _cellCount) % _cellCount].grad * _oneMinusSimj);
+
+
+        for (int i = 0;i < cells;i++) {
+
+            /*
+             Unit vectorItem = ShiftedVector[i];
+                int imj = (i + (_convolution)) % _cellCount;
+                gradient += ((-_gatedVector[imj].Value) + _gatedVector[(imj + 1) % _cellCount].Value) * vectorItem.Gradient;
+                int j = (i - (_convolution) + _cellCount) % _cellCount;
+                _gatedVector[i].Gradient += (vectorItem.Gradient * _simj) + (ShiftedVector[(j - 1 + _cellCount) % _cellCount].Gradient * _oneMinusSimj);
+
+             */
+
+            Unit vectorItem = shifted[i];
+            int imj = (int) ((i + conv) % cells);
+            gradient += ((-gated[imj].value) + gated[(imj + 1) % cells].value) * vectorItem.grad;
+            int j = (int) ((i - conv + cells) % cells);
+            gated[i].grad += (vectorItem.grad * simj) + (shifted[(j - 1 + cells) % cells].grad * oneMinusSimj);
         }
-        gradient = gradient * 2.0 * _shiftWeight * (1.0 - _shiftWeight);
+        gradient = gradient * 2.0 * shiftWeight * (1.0 - shiftWeight);
         _shift.grad += gradient;
     }
 

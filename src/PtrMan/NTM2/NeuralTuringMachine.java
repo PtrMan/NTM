@@ -46,6 +46,11 @@ public class NeuralTuringMachine implements INeuralTuringMachine
         return control.getOutput();
     }
 
+
+    public double getOutput(int i) {
+        return control.getOutput(i);
+    }
+
     public MemoryState getNow() {
         return now;
     }

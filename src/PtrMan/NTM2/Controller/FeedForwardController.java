@@ -21,6 +21,9 @@ public class FeedForwardController
     public double[] getOutput() {
         return output.getOutput();
     }
+    public double getOutput(int i) {
+        return output.getOutput(i);
+    }
 
     @Override
     public FeedForwardController clone() {

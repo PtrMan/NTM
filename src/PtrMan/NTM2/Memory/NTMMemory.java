@@ -42,12 +42,11 @@ public class NTMMemory {
         this.heading = heading;
         this.parent = new WeakReference(parent);
 
-        final int numHeads = heads.length;
-
-        oldSimilar = BetaSimilarity.getTensor2(numHeads, memoryHeight);
         this.heads = heads;
-        erase = getTensor2(numHeads, memoryWidth);
-        add = getTensor2(numHeads, memoryWidth);
+
+        oldSimilar = BetaSimilarity.getTensor2(heads.length, memoryHeight);
+        erase = getTensor2(heads.length, memoryWidth);
+        add = getTensor2(heads.length, memoryWidth);
     }
 
     /** number of heads, even if unallocated */
@@ -124,14 +123,25 @@ public class NTMMemory {
 
         final NTMMemory p = parent();
 
-        for (int i = 0; i < memoryHeight; i++) {
+        //local cache copy avoiding field reference in critical loop
+        final HeadSetting[] heading = this.heading;
+        final double[][] erase = this.erase;
 
-            Unit[] oldDataVector = p.data[i];
-            Unit[] newDataVector = data[i];
-            for (int j = 0; j < memoryWidth; j++) {
+        final int height = this.memoryHeight;
+        final int width = this.memoryWidth;
+
+        for (int i = 0; i < height; i++) {
+
+            final Unit[] oldDataVector = p.data[i];
+            final Unit[] newDataVector = data[i];
+
+
+            for (int j = 0; j < width; j++) {
                 double gradient = 1.0;
 
                 for (int q = 0; q < h; q++) {
+
+
                     gradient *= 1.0 - (heading[q].addressingVector[i].value * erase[q][j]);
                 }
                 oldDataVector[j].grad += gradient * newDataVector[j].grad;

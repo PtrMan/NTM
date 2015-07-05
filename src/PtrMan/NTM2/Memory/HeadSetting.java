@@ -17,7 +17,7 @@ public class HeadSetting
 
 
     public final Unit[] getShiftedVector() {
-        return shiftedAddressing.shiftedVector;
+        return shiftedAddressing.shifted;
     }
 
     public final double getGammaIndex() {

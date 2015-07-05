@@ -48,6 +48,10 @@ public class Unit
         };
     }
 
+    public void setDelta(final double target) {
+        grad = value - target;
+    }
+
 }
 
 
