@@ -177,6 +177,9 @@ public class HiddenLayer
         }
     }
 
+    public int size() {
+        return inputs;
+    }
 }
 
 

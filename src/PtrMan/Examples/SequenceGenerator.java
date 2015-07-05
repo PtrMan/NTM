@@ -1,4 +1,4 @@
-package CopyTaskTest;
+package Examples;
 
 import org.javatuples.Pair;
 
@@ -11,7 +11,7 @@ public class SequenceGenerator
     public static Pair<double[][], double[][]> generateSequenceSawtooth(int length, int vectorSize) {
         length = length*2+2; //to be consistent with the WTF sequence below
 
-        double[][] input = new double[length][vectorSize+2];
+        double[][] input = new double[length][vectorSize];
         double[][] output = new double[length][vectorSize];
 
         for (int i = 0;i < length;i++) {
@@ -25,18 +25,18 @@ public class SequenceGenerator
         return new Pair<>(input, output);
     }
 
-    public static Pair<double[][], double[][]> generateSequenceWTF(int length, int vectorSize) {
-        double[][] data = new double[length][vectorSize];
+    public static Pair<double[][], double[][]> generateSequenceWTF(int length, int inputVectorSize) {
+        double[][] data = new double[length][inputVectorSize];
         for (int i = 0;i < length;i++)
         {
 
-            for (int j = 0;j < vectorSize;j++)
+            for (int j = 0;j < inputVectorSize;j++)
             {
                 data[i][j] = Rand.nextInt(2);
             }
         }
         int sequenceLength = (length * 2) + 2;
-        int inputVectorSize = vectorSize + 2;
+        int vectorSize = inputVectorSize - 2;
         double[][] input = new double[sequenceLength][inputVectorSize];
 
         for (int i = 0;i < sequenceLength;i++)

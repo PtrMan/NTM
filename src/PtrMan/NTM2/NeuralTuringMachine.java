@@ -42,6 +42,7 @@ public class NeuralTuringMachine implements INeuralTuringMachine
     @Override
     public void process(double[] input) {
         this.prevInput = input;
+
         prev = now;
         control.process(input, prev.read);
         now = prev.process(getHeads());
@@ -96,7 +97,7 @@ public class NeuralTuringMachine implements INeuralTuringMachine
 
     public void initializeMemoryState() {
         now = new MemoryState(memory);
-        prev = null;
+        //prev = null;
     }
 
     public void backwardErrorPropagation(double[] knownOutput) {
@@ -109,6 +110,18 @@ public class NeuralTuringMachine implements INeuralTuringMachine
     }
 
 
+    public double getInput(int i) {
+        if (prevInput!=null)
+            return prevInput[i];
+        return 0;
+    }
+
+    public int inputSize() {
+        return control.inputSize();
+    }
+    public int outputSize() {
+        return control.outputSize();
+    }
 }
 
 

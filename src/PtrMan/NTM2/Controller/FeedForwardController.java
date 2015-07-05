@@ -18,6 +18,13 @@ public class FeedForwardController
         this.output = output;
     }
 
+    public int inputSize() {
+        return hidden.size();
+    }
+    public int outputSize() {
+        return output.size();
+    }
+
     public double[] getOutput() {
         return output.getOutput();
     }
@@ -56,6 +63,7 @@ public class FeedForwardController
         output.backwardErrorPropagation(knownOutput, hidden);
         hidden.backwardErrorPropagation(input, reads);
     }
+
 
 }
 

@@ -172,6 +172,10 @@ public class OutputLayer
     final public double getOutput(final int i) {
         return outputs[i].value;
     }
+
+    public int size() {
+        return _outputSize;
+    }
 }
 
 
