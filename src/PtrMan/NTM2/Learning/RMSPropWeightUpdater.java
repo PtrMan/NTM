@@ -28,15 +28,18 @@ public class RMSPropWeightUpdater implements WeightUpdaterBase {
         return __ChangeAddConstant;
     }
 
-    private final double[] _n;
-    private final double[] _g;
-    private final double[] _delta;
-    private int _i;
+    private final double[] n;
+    private final double[] g;
+    private final double[] delta;
+
+    /** time index */
+    private int t;
+
     public RMSPropWeightUpdater(int weightsCount, double gradientMomentum, double deltaMomentum, double changeMultiplier, double changeAddConstant) {
-        _n = new double[weightsCount];
-        _g = new double[weightsCount];
-        _delta = new double[weightsCount];
-        _i = 0;
+        n = new double[weightsCount];
+        g = new double[weightsCount];
+        delta = new double[weightsCount];
+        t = 0;
 
         __GradientMomentum = gradientMomentum;
         __DeltaMomentum = deltaMomentum;
@@ -48,16 +51,25 @@ public class RMSPropWeightUpdater implements WeightUpdaterBase {
 
     @Override
     public void reset() {
-        _i = 0;
+        t = 0;
     }
 
     @Override
-    public void updateWeight(Unit unit) {
-        _n[_i] = (getGradientMomentum() * _n[_i]) + ((1.0 - getGradientMomentum()) * unit.grad * unit.grad);
-        _g[_i] = (getGradientMomentum() * _g[_i]) + ((1.0 - getGradientMomentum()) * unit.grad);
-        _delta[_i] = (getDeltaMomentum() * _delta[_i]) - (getChangeMultiplier() * (unit.grad / Math.sqrt(_n[_i] - (_g[_i] * _g[_i]) + getChangeAddConstant())));
-        unit.value += _delta[_i];
-        _i++;
+    public void updateWeight(final Unit unit) {
+
+        final double gm = getGradientMomentum();
+        final double ugrad = unit.grad;
+        final double ugradGM = (1.0 - gm) * ugrad;
+
+        final double nt = n[t] = (gm * n[t]) + (ugradGM * ugrad);
+        final double gt = g[t] = (gm * g[t]) + ugradGM;
+
+        // +=
+        unit.value +=
+                //assignment:
+                ( delta[t] = (getDeltaMomentum() * delta[t]) - (getChangeMultiplier() * (ugrad / Math.sqrt(nt - (gt*gt) + getChangeAddConstant()))) );
+
+        t++;
     }
 
 }

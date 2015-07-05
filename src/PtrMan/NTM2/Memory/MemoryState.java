@@ -15,12 +15,13 @@ public class MemoryState
     public final NTMMemory memory;
     public final HeadSetting[] heading;
     public final ReadData[] read;
+    private final ContentAddressing[] contentAddr;
 
     public MemoryState(NTMMemory memory) {
         this.memory = memory;
-
+        this.contentAddr = memory.getContentAddressing();
         //TODO just pass the array and dont involve a lambda here
-        heading = HeadSetting.getVector(this.memory, i -> new Pair<>(this.memory.memoryHeight, this.memory.getContentAddressing()[i]));
+        heading = HeadSetting.getVector(this.memory, i -> new Pair<>(this.memory.memoryHeight, contentAddr[i]));
         read = ReadData.getVector(this.memory.headNum(), i -> new Pair<>(heading[i], this.memory));
     }
 
@@ -28,6 +29,7 @@ public class MemoryState
         this.memory = memory;
         heading = headSettings;
         read = readDatas;
+        contentAddr = null;
     }
 
 
@@ -55,13 +57,13 @@ public class MemoryState
     }
 
     public void backwardErrorPropagation2() {
-        ContentAddressing[] content = memory.getContentAddressing();
+
         for (int i = 0;i < read.length;i++) {
             read[i].backwardErrorPropagation();
-            for (int j = 0;j < read[i].HeadSetting.addressingVector.length;j++) {
-                content[i].ContentVector[j].grad += read[i].HeadSetting.addressingVector[j].grad;
+            for (int j = 0;j < read[i].head.addressingVector.length;j++) {
+                contentAddr[i].content[j].grad += read[i].head.addressingVector[j].grad;
             }
-            content[i].backwardErrorPropagation();
+            contentAddr[i].backwardErrorPropagation();
         }
     }
 
@@ -75,8 +77,10 @@ public class MemoryState
             BetaSimilarity[] similarities = new BetaSimilarity[memory.memoryHeight];
             for (int j = 0;j < memoryColumnsN;j++) {
                 Unit[] memoryColumn = memory.data[j];
-                SimilarityMeasure similarity = new SimilarityMeasure(new CosineSimilarityFunction(), head.getKeyVector(), memoryColumn);
-                similarities[j] = new BetaSimilarity(head.getBeta(),similarity);
+
+                similarities[j] = new BetaSimilarity(head.getBeta(),
+                        new SimilarityMeasure(new CosineSimilarityFunction(),
+                                head.getKeyVector(), memoryColumn));
             }
             ContentAddressing ca = new ContentAddressing(similarities);
             GatedAddressing ga = new GatedAddressing(head.getGate(), ca, heading[i]);

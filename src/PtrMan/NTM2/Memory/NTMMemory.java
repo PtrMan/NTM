@@ -214,10 +214,8 @@ public class NTMMemory {
     }
 
     public void updateWeights(IWeightUpdater weightUpdater) {
-        for (Object __dummyForeachVar1 : oldSimilar) {
-            BetaSimilarity[] betaSimilarities = (BetaSimilarity[]) __dummyForeachVar1;
-            for (Object __dummyForeachVar0 : betaSimilarities) {
-                BetaSimilarity betaSimilarity = (BetaSimilarity) __dummyForeachVar0;
+        for (final BetaSimilarity[] betaSimilarities : oldSimilar) {
+            for (final BetaSimilarity betaSimilarity : betaSimilarities) {
                 weightUpdater.updateWeight(betaSimilarity.BetaSimilarityMeasure);
             }
         }

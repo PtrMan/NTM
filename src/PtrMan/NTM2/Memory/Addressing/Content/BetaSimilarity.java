@@ -10,6 +10,7 @@ public class BetaSimilarity
     public final Unit BetaSimilarityMeasure;
     //Key strength beta
     private double _b;
+
     public BetaSimilarity(Unit beta, SimilarityMeasure m) {
         _beta = beta;
         measure = m;
@@ -17,7 +18,7 @@ public class BetaSimilarity
         _b = Math.exp(_beta.value);
 
         BetaSimilarityMeasure = (m != null) ?
-                new Unit(_b * m.Similarity.value)
+                new Unit(_b * m.similarity.value)
                 :
                 new Unit(0.0);
     }
@@ -27,7 +28,7 @@ public class BetaSimilarity
     }
 
     public void backwardErrorPropagation() {
-        Unit similarity = measure.Similarity;
+        Unit similarity = measure.similarity;
         double betaGradient = BetaSimilarityMeasure.grad;
         _beta.grad += similarity.value * _b * betaGradient;
         similarity.grad += _b * betaGradient;

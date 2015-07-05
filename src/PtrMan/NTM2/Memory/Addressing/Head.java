@@ -72,7 +72,7 @@ public class Head
         return vector;
     }
 
-    public Unit get___idx(int i) {
+    public Unit get(int i) {
         if (i < width)
         {
             return _eraseVector[i];

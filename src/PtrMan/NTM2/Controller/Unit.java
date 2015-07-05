@@ -18,9 +18,7 @@ public class Unit
 
     public static Consumer<Unit[]> getVectorUpdateAction(Consumer<Unit> updateAction) {
         return (units) -> {
-            for (Object __dummyForeachVar1 : units)
-            {
-                Unit unit = (Unit)__dummyForeachVar1;
+            for (Unit unit : units) {
                 updateAction.accept(unit);
             }
         };
@@ -29,9 +27,7 @@ public class Unit
     public static Consumer<Unit[][]> getTensor2UpdateAction(Consumer<Unit> updateAction) {
         Consumer<Unit[]> vectorUpdateAction = getVectorUpdateAction(updateAction);
         return (units) -> {
-            for (Object __dummyForeachVar3 : units)
-            {
-                Unit[] unit = (Unit[])__dummyForeachVar3;
+            for (Unit[] unit : units) {
                 vectorUpdateAction.accept(unit);
             }
         };
@@ -40,9 +36,7 @@ public class Unit
     public static Consumer<Unit[][][]> getTensor3UpdateAction(Consumer<Unit> updateAction) {
         Consumer<Unit[][]> tensor2UpdateAction = getTensor2UpdateAction(updateAction);
         return (units) -> {
-            for (Object __dummyForeachVar5 : units)
-            {
-                Unit[][] unit = (Unit[][])__dummyForeachVar5;
+            for (Unit[][] unit : units) {
                 tensor2UpdateAction.accept(unit);
             }
         };

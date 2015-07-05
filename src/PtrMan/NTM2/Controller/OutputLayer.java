@@ -9,7 +9,6 @@ public class OutputLayer
 {
     private final int _outputSize;
     private final int controllerSize;
-    private final int _headCount;
     private final int memoryWidth;
     private final int _headUnitSize;
     //Weights from controller to output
@@ -24,7 +23,6 @@ public class OutputLayer
     public OutputLayer(int outputSize, int controllerSize, int headCount, int memoryUnitSizeM) {
         _outputSize = outputSize;
         this.controllerSize = controllerSize;
-        _headCount = headCount;
         memoryWidth = memoryUnitSizeM;
         _headUnitSize = Head.getUnitSize(memoryUnitSizeM);
         _hiddenToOutputLayerWeights = UnitFactory.getTensor2(outputSize,controllerSize + 1);
@@ -33,15 +31,14 @@ public class OutputLayer
         outputs = null;
     }
 
-    private OutputLayer(Unit[][] hiddenToOutputLayerWeights, Unit[][][] hiddenToHeadsWeights, Unit[] outputs, Head[] heads, int headCount, int outputSize, int controllerSize, int memoryUnitSizeM, int headUnitSize) {
+    private OutputLayer(Unit[][] hiddenToOutputLayerWeights, Unit[][][] hiddenToHeadsWeights, Unit[] outputs, Head[] heads, int outputSize, int controllerSize, int memoryWidth, int headUnitSize) {
         _hiddenToOutputLayerWeights = hiddenToOutputLayerWeights;
         _hiddenToHeadsWeights = hiddenToHeadsWeights;
         this.heads = heads;
         this.controllerSize = controllerSize;
         _outputSize = outputSize;
         this.outputs = outputs;
-        _headCount = headCount;
-        memoryWidth = memoryUnitSizeM;
+        this.memoryWidth = memoryWidth;
         _headUnitSize = headUnitSize;
     }
 
@@ -60,7 +57,7 @@ public class OutputLayer
             sum += weights[controllerSize].value;
             outputs[i].value = Sigmoid.getValue(sum);
         }
-        for (int i = 0;i < _headCount;i++)
+        for (int i = 0;i < heads.length;i++)
         {
             //Foreach neuron in head output layer
             Unit[][] headsWeights = _hiddenToHeadsWeights[i];
@@ -76,28 +73,18 @@ public class OutputLayer
                 }
                 //Plus threshold
                 sum += headWeights[controllerSize].value;
-                head.get___idx(j).value += sum;
+                head.get(j).value += sum;
             }
         }
     }
 
     @Override
     public OutputLayer clone() {
-        try
-        {
+
             Unit[] outputLayer = UnitFactory.getVector(_outputSize);
-            Head[] heads = Head.getVector(_headCount, i -> memoryWidth);
-            return new OutputLayer(_hiddenToOutputLayerWeights, _hiddenToHeadsWeights, outputLayer, heads, _headCount, _outputSize, controllerSize, memoryWidth, _headUnitSize);
-        }
-        catch (RuntimeException __dummyCatchVar0)
-        {
-            throw __dummyCatchVar0;
-        }
-        catch (Exception __dummyCatchVar0)
-        {
-            throw new RuntimeException(__dummyCatchVar0);
-        }
-    
+            Head[] heads = Head.getVector(this.heads.length, i -> memoryWidth);
+            return new OutputLayer(_hiddenToOutputLayerWeights, _hiddenToHeadsWeights, outputLayer, heads, _outputSize, controllerSize, memoryWidth, _headUnitSize);
+
     }
 
     public void backwardErrorPropagation(final double[] knownOutput, final HiddenLayer hiddenLayer) {
@@ -117,14 +104,14 @@ public class OutputLayer
                 hiddenLayer.neurons[i].grad += weights[i].value * unitGrad;
             }
         }
-        for (int j = 0;j < _headCount;j++)
+        for (int j = 0;j < heads.length;j++)
         {
             //Heads error backpropagation
             Head head = heads[j];
             Unit[][] weights = _hiddenToHeadsWeights[j];
             for (int k = 0;k < _headUnitSize;k++)
             {
-                final double unitGrad = head.get___idx(k).grad;
+                final double unitGrad = head.get(k).grad;
                 final Unit[] weightsK = weights[k];
                 for (int i = 0;i < cs;i++) {
                     hiddenLayer.neurons[i].grad += weightsK[i].value * unitGrad;
@@ -141,7 +128,8 @@ public class OutputLayer
             }
             wyh1I[controllerSize].grad += yGrad;
         }
-        for (int i = 0;i < _headCount;i++)
+
+        for (int i = 0;i < heads.length;i++)
         {
             //TODO refactor names
             //Wuh1 error backpropagation
@@ -149,14 +137,14 @@ public class OutputLayer
             final Unit[][] units = _hiddenToHeadsWeights[i];
             for (int j = 0;j < _headUnitSize;j++)
             {
-                double headUnitGrad = head.get___idx(j).grad;
-                final Unit[] wuh1ij = units[j];
+                double headUnitGrad = head.get(j).grad;
+                final Unit[] unitJ = units[j];
                 for (int k = 0;k < controllerSize;k++)
                 {
                     Unit unit = hiddenLayer.neurons[k];
-                    wuh1ij[k].grad += headUnitGrad * unit.value;
+                    unitJ[k].grad += headUnitGrad * unit.value;
                 }
-                wuh1ij[controllerSize].grad += headUnitGrad;
+                unitJ[controllerSize].grad += headUnitGrad;
             }
         }
     }
@@ -175,8 +163,7 @@ public class OutputLayer
 
     public double[] getOutput() {
         double[] output = new double[outputs.length];
-        for (int i = 0;i < outputs.length;i++)
-        {
+        for (int i = 0;i < outputs.length;i++)        {
             output[i] = outputs[i].value;
         }
         return output;

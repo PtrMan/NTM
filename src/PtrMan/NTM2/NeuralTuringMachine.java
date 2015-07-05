@@ -15,27 +15,33 @@ public class NeuralTuringMachine implements INeuralTuringMachine
     private MemoryState now;
 
     /** current input */
-    private double[] input;
+    private double[] prevInput;
 
     public NeuralTuringMachine(NeuralTuringMachine oldMachine) {
         control = oldMachine.control.clone();
         memory = oldMachine.memory;
         now = oldMachine.getNow();
         prev = oldMachine.getPrev();
-        input = null;
+        prevInput = null;
     }
 
     public NeuralTuringMachine(int inputSize, int outputSize, int controllerSize, int headCount, int memoryHeight, int memoryWidth, IWeightUpdater initializer) {
         memory = new NTMMemory(memoryHeight,memoryWidth,headCount);
         control = new FeedForwardController(controllerSize,inputSize,outputSize,headCount,memoryWidth);
         now = prev = null;
-        input = null;
+        prevInput = null;
         updateWeights(initializer);
+    }
+
+
+    public final void updateWeights(IWeightUpdater weightUpdater) {
+        memory.updateWeights(weightUpdater);
+        control.updateWeights(weightUpdater);
     }
 
     @Override
     public void process(double[] input) {
-        this.input = input;
+        this.prevInput = input;
         prev = now;
         control.process(input, prev.read);
         now = prev.process(getHeads());
@@ -95,17 +101,13 @@ public class NeuralTuringMachine implements INeuralTuringMachine
 
     public void backwardErrorPropagation(double[] knownOutput) {
         now.backwardErrorPropagation();
-        control.backwardErrorPropagation(knownOutput, input, prev.read);
+        control.backwardErrorPropagation(knownOutput, prevInput, prev.read);
     }
 
     public void backwardErrorPropagation() {
         now.backwardErrorPropagation2();
     }
 
-    public final void updateWeights(IWeightUpdater weightUpdater) {
-        memory.updateWeights(weightUpdater);
-        control.updateWeights(weightUpdater);
-    }
 
 }
 

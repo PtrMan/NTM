@@ -46,8 +46,7 @@ public class HeadSetting
             sum += unit.value;
         }
 
-        for (Object __dummyForeachVar0 : addressingVector) {
-            Unit unit = (Unit)__dummyForeachVar0;
+        for (Unit unit : addressingVector) {
             unit.value /= sum;
             if (Double.isNaN(unit.value)) {
                 throw new RuntimeException("Should not be NaN - Error");
@@ -63,7 +62,7 @@ public class HeadSetting
         addressingVector = UnitFactory.getVector(memoryColumnsN);
 
         for (int i = 0;i < memoryColumnsN;i++) {
-            addressingVector[i].value = contentAddressing.ContentVector[i].value;
+            addressingVector[i].value = contentAddressing.content[i].value;
         }
     }
 

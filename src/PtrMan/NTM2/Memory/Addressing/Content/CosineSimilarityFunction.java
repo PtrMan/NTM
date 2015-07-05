@@ -4,16 +4,21 @@ import NTM2.Controller.Unit;
 
 public class CosineSimilarityFunction implements ISimilarityFunction
 {
-    private double _uv = 0.0;
-    private double _normalizedU = 0.0;
-    private double _normalizedV = 0.0;
+
+    double _uv;
+    double _normalizedU, _normalizedV;
 
     @Override
     public Unit calculate(Unit[] u, Unit[] v) {
+        _uv = 0;
+        _normalizedU = _normalizedV = 0;
+
         for (int i = 0;i < u.length;i++) {
-            _uv += u[i].value * v[i].value;
-            _normalizedU += u[i].value * u[i].value;
-            _normalizedV += v[i].value * v[i].value;
+            final double uV = u[i].value;
+            final double vV = v[i].value;
+            _uv += uV * vV;
+            _normalizedU += uV * uV;
+            _normalizedV += vV * vV;
         }
         _normalizedU = Math.sqrt(_normalizedU);
         _normalizedV = Math.sqrt(_normalizedV);

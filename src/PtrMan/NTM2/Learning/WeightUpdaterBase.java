@@ -9,27 +9,21 @@ public interface WeightUpdaterBase extends IWeightUpdater {
 
     @Override
     default void updateWeight(Unit[] data) {
-        for (Object __dummyForeachVar0 : data)
-        {
-            Unit unit = (Unit)__dummyForeachVar0;
+        for (Unit unit : data)         {
             updateWeight(unit);
         }
     }
 
     @Override
     default void updateWeight(Unit[][] data) {
-        for (Object __dummyForeachVar1 : data)
-        {
-            Unit[] units = (Unit[])__dummyForeachVar1;
+        for (Unit[] units : data) {
             updateWeight(units);
         }
     }
 
     @Override
     default void updateWeight(Unit[][][] data) {
-        for (Object __dummyForeachVar2 : data)
-        {
-            Unit[][] units = (Unit[][])__dummyForeachVar2;
+        for (Unit[][] units : data) {
             updateWeight(units);
         }
     }

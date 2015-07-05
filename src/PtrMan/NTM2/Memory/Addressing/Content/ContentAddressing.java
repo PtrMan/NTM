@@ -8,12 +8,12 @@ import java.util.function.Function;
 public class ContentAddressing   
 {
     public final BetaSimilarity[] BetaSimilarities;
-    public final Unit[] ContentVector;
+    public final Unit[] content;
 
     //Implementation of focusing by content (Page 8, Unit 3.3.1 Focusing by Content)
     public ContentAddressing(BetaSimilarity[] betaSimilarities) {
         BetaSimilarities = betaSimilarities;
-        ContentVector = UnitFactory.getVector(betaSimilarities.length);
+        content = UnitFactory.getVector(betaSimilarities.length);
         //Subtracting max increase numerical stability
         double max = BetaSimilarities[0].BetaSimilarityMeasure.value;
         for( BetaSimilarity iterationBetaSimilarity : betaSimilarities ) {
@@ -24,25 +24,24 @@ public class ContentAddressing
         for (int i = 0;i < BetaSimilarities.length;i++) {
             BetaSimilarity unit = BetaSimilarities[i];
             double weight = Math.exp(unit.BetaSimilarityMeasure.value - max);
-            ContentVector[i].value = weight;
+            content[i].value = weight;
             sum += weight;
         }
-        for (Object __dummyForeachVar0 : ContentVector) {
-            Unit unit = (Unit)__dummyForeachVar0;
-            unit.value /= sum;
+        for (Unit c : content) {
+            c.value /= sum;
         }
     }
 
     public void backwardErrorPropagation() {
         double gradient = 0.0;
-        for (Object __dummyForeachVar1 : ContentVector)
+        for (Object __dummyForeachVar1 : content)
         {
             Unit unit = (Unit)__dummyForeachVar1;
             gradient += unit.grad * unit.value;
         }
-        for (int i = 0;i < ContentVector.length;i++)
+        for (int i = 0;i < content.length;i++)
         {
-            BetaSimilarities[i].BetaSimilarityMeasure.grad += (ContentVector[i].grad - gradient) * ContentVector[i].value;
+            BetaSimilarities[i].BetaSimilarityMeasure.grad += (content[i].grad - gradient) * content[i].value;
         }
     }
 
