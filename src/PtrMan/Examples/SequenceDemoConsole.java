@@ -8,10 +8,10 @@ import java.util.Arrays;
 public class SequenceDemoConsole extends SequenceLearner {
 
     /** print every frame in all sequences, in the order they are trained */
-    boolean printSequences = true;
+    boolean printSequences = false;
 
     public static void main(String[] args) throws Exception {
-        SequenceLearner s = new SequenceDemoConsole(5);
+        SequenceLearner s = new SequenceDemoConsole(16);
         while (true) {
             s.run();
         }
@@ -23,7 +23,8 @@ public class SequenceDemoConsole extends SequenceLearner {
 
     @Override
     protected Pair<double[][], double[][]> nextTrainingSequence() {
-        return SequenceGenerator.generateSequenceSawtooth(rand.nextInt(10) + 1, vectorSize);
+        return SequenceGenerator.generateSequenceXOR(rand.nextInt(10) + 1, vectorSize);
+        //return SequenceGenerator.generateSequenceSawtooth(rand.nextInt(10) + 1, vectorSize);
         //return SequenceGenerator.generateSequenceWTF(rand.nextInt(20) + 1, vectorSize);
     }
 
