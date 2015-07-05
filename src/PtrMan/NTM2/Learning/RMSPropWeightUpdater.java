@@ -53,10 +53,10 @@ public class RMSPropWeightUpdater implements WeightUpdaterBase {
 
     @Override
     public void updateWeight(Unit unit) {
-        _n[_i] = (getGradientMomentum() * _n[_i]) + ((1 - getGradientMomentum()) * unit.gradient * unit.gradient);
-        _g[_i] = (getGradientMomentum() * _g[_i]) + ((1 - getGradientMomentum()) * unit.gradient);
-        _delta[_i] = (getDeltaMomentum() * _delta[_i]) - (getChangeMultiplier() * (unit.gradient / Math.sqrt(_n[_i] - (_g[_i] * _g[_i]) + getChangeAddConstant())));
-        unit.Value += _delta[_i];
+        _n[_i] = (getGradientMomentum() * _n[_i]) + ((1.0 - getGradientMomentum()) * unit.grad * unit.grad);
+        _g[_i] = (getGradientMomentum() * _g[_i]) + ((1.0 - getGradientMomentum()) * unit.grad);
+        _delta[_i] = (getDeltaMomentum() * _delta[_i]) - (getChangeMultiplier() * (unit.grad / Math.sqrt(_n[_i] - (_g[_i] * _g[_i]) + getChangeAddConstant())));
+        unit.value += _delta[_i];
         _i++;
     }
 

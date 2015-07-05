@@ -6,31 +6,31 @@ import NTM2.Controller.Unit;
 public class BetaSimilarity   
 {
     private final Unit _beta;
-    public SimilarityMeasure Similarity;
+    public SimilarityMeasure measure;
     public final Unit BetaSimilarityMeasure;
     //Key strength beta
     private double _b;
-    public BetaSimilarity(Unit beta, SimilarityMeasure similarity) {
+    public BetaSimilarity(Unit beta, SimilarityMeasure m) {
         _beta = beta;
-        Similarity = similarity;
+        measure = m;
         //Ensuring that beta will be positive
-        _b = Math.exp(_beta.Value);
+        _b = Math.exp(_beta.value);
 
-        BetaSimilarityMeasure = (similarity != null) ?
-                new Unit(_b * similarity.Similarity.Value)
+        BetaSimilarityMeasure = (m != null) ?
+                new Unit(_b * m.Similarity.value)
                 :
-                new Unit(0);
+                new Unit(0.0);
     }
 
     public BetaSimilarity() {
-        this(new Unit(0), null);
+        this(new Unit(0.0), null);
     }
 
     public void backwardErrorPropagation() {
-        Unit similarity = Similarity.Similarity;
-        double betaGradient = BetaSimilarityMeasure.gradient;
-        _beta.gradient += similarity.Value * _b * betaGradient;
-        similarity.gradient += _b * betaGradient;
+        Unit similarity = measure.Similarity;
+        double betaGradient = BetaSimilarityMeasure.grad;
+        _beta.grad += similarity.value * _b * betaGradient;
+        similarity.grad += _b * betaGradient;
     }
 
     public static BetaSimilarity[][] getTensor2(int x, int y) {

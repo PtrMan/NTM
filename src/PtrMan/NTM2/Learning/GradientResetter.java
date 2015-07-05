@@ -13,7 +13,7 @@ public class GradientResetter implements WeightUpdaterBase {
 
     @Override
     public void updateWeight(Unit data) {
-        data.gradient = 0;
+        data.grad = 0.0;
     }
 
 }

@@ -16,13 +16,13 @@ public class ReadData
     public ReadData(HeadSetting headSetting, NTMMemory controllerMemory) {
         HeadSetting = headSetting;
         _controllerMemory = controllerMemory;
-        _cellSize = _controllerMemory.CellSizeM;
-        _cellCount = _controllerMemory.CellCountN;
+        _cellSize = _controllerMemory.memoryWidth;
+        _cellCount = _controllerMemory.memoryHeight;
         ReadVector = new Unit[_cellSize];
         for (int i = 0;i < _cellSize;i++) {
-            double temp = 0;
+            double temp = 0.0;
             for (int j = 0;j < _cellCount;j++) {
-                temp += headSetting.addressingVector[j].Value * controllerMemory.Data[j][i].Value;
+                temp += headSetting.addressingVector[j].value * controllerMemory.data[j][i].value;
             }
             //if (double.IsNaN(temp))
             //{
@@ -34,16 +34,16 @@ public class ReadData
 
     public void backwardErrorPropagation() {
         for (int i = 0;i < _cellCount;i++) {
-            double gradient = 0;
-            Unit[] dataVector = _controllerMemory.Data[i];
+            double gradient = 0.0;
+            Unit[] dataVector = _controllerMemory.data[i];
             Unit addressingVectorUnit = HeadSetting.addressingVector[i];
             for (int j = 0;j < _cellSize;j++) {
-                double readUnitGradient = ReadVector[j].gradient;
+                double readUnitGradient = ReadVector[j].grad;
                 Unit dataUnit = dataVector[j];
-                gradient += readUnitGradient * dataUnit.Value;
-                dataUnit.gradient += readUnitGradient * addressingVectorUnit.Value;
+                gradient += readUnitGradient * dataUnit.value;
+                dataUnit.grad += readUnitGradient * addressingVectorUnit.value;
             }
-            addressingVectorUnit.gradient += gradient;
+            addressingVectorUnit.grad += gradient;
         }
     }
 

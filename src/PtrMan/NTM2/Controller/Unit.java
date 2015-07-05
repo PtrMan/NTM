@@ -4,26 +4,16 @@ import java.util.function.Consumer;
 
 public class Unit   
 {
-    public double Value;
-    public double gradient;
+    public double value;
+    public double grad;
+
     public Unit(double value) {
-        Value = value;
+        this.value = value;
+        this.grad = 0;
     }
 
     public String toString() {
-        try
-        {
-            return String.format("Value: {0:0.000}, Gradient: {1:0.000}", Value, gradient);
-        }
-        catch (RuntimeException __dummyCatchVar0)
-        {
-            throw __dummyCatchVar0;
-        }
-        catch (Exception __dummyCatchVar0)
-        {
-            throw new RuntimeException(__dummyCatchVar0);
-        }
-    
+        return "<" + value + ',' + grad + '>';
     }
 
     public static Consumer<Unit[]> getVectorUpdateAction(Consumer<Unit> updateAction) {

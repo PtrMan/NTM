@@ -8,73 +8,111 @@ import NTM2.Memory.Addressing.Content.BetaSimilarity;
 import NTM2.Memory.Addressing.Content.ContentAddressing;
 import NTM2.Memory.Addressing.Head;
 
-public class NTMMemory {
-    public final Unit[][] Data;
-    public HeadSetting[] HeadSettings;
-    private Head[] _heads;
-    private NTMMemory _oldMemory;
-    private BetaSimilarity[][] _oldSimilarities;
-    private double[][] _erase;
-    private double[][] _add;
-    public final int CellCountN;
-    public final int CellSizeM;
-    public final int HeadCount;
+import java.lang.ref.WeakReference;
 
-    public NTMMemory(int cellCountN, int cellSizeM, int headCount) {
-        CellCountN = cellCountN;
-        CellSizeM = cellSizeM;
-        HeadCount = headCount;
-        Data = UnitFactory.getTensor2(cellCountN, cellSizeM);
-        _oldSimilarities = BetaSimilarity.getTensor2(headCount, cellCountN);
+public class NTMMemory {
+
+    public final Unit[][] data;
+    public final HeadSetting[] heading;
+    private final Head[] heads;
+    public final WeakReference<NTMMemory> parent;
+    private BetaSimilarity[][] oldSimilar;
+    public final double[][] erase;
+    public final double[][] add;
+    public final int memoryHeight;
+    public final int memoryWidth;
+
+
+    public NTMMemory(int memoryHeight, int memoryWidth, int heads) {
+        this(null, memoryHeight, memoryWidth, new Head[heads],
+                UnitFactory.getTensor2(memoryHeight, memoryWidth),
+                null);
+
+
     }
 
-    public NTMMemory(HeadSetting[] headSettings, Head[] heads, NTMMemory memory) {
-        CellCountN = memory.CellCountN;
-        CellSizeM = memory.CellSizeM;
-        HeadCount = memory.HeadCount;
-        HeadSettings = headSettings;
-        _heads = heads;
-        _oldMemory = memory;
-        Data = UnitFactory.getTensor2(memory.CellCountN, memory.CellSizeM);
-        _erase = getTensor2(HeadCount, memory.CellSizeM);
-        _add = getTensor2(HeadCount, memory.CellSizeM);
-        double[][] erasures = getTensor2(memory.CellCountN, memory.CellSizeM);
-        for (int i = 0; i < HeadCount; i++) {
-            Unit[] eraseVector = _heads[i].getEraseVector();
-            Unit[] addVector = _heads[i].getAddVector();
-            double[] erases = _erase[i];
-            double[] adds = _add[i];
-            for (int j = 0; j < CellSizeM; j++) {
-                erases[j] = Sigmoid.getValue(eraseVector[j].Value);
-                adds[j] = Sigmoid.getValue(addVector[j].Value);
+    public final NTMMemory parent() {
+        return parent.get();
+    }
+
+    NTMMemory(HeadSetting[] heading, int memoryHeight, int memoryWidth, Head[] heads, Unit[][] data, NTMMemory parent) {
+        this.memoryHeight = memoryHeight;
+        this.memoryWidth = memoryWidth;
+        this.data = data;
+        this.heading = heading;
+        this.parent = new WeakReference(parent);
+
+        final int numHeads = heads.length;
+
+        oldSimilar = BetaSimilarity.getTensor2(numHeads, memoryHeight);
+        this.heads = heads;
+        erase = getTensor2(numHeads, memoryWidth);
+        add = getTensor2(numHeads, memoryWidth);
+    }
+
+    /** number of heads, even if unallocated */
+    public int headNum() {
+        return erase.length;
+    }
+
+    public NTMMemory(HeadSetting[] heading, Head[] heads, NTMMemory memory) {
+        this(heading, memory.memoryHeight, memory.memoryWidth, memory.heads,
+                UnitFactory.getTensor2(memory.memoryHeight, memory.memoryWidth), memory);
+
+        double[][] erasures = getTensor2(memory.memoryHeight, memory.memoryWidth);
+
+        int h = headNum();
+
+        for (int i = 0; i < h; i++) {
+            Head d = this.heads[i];
+            if (d == null)
+                this.heads[i] = d = new Head(memory.getWidth());
+
+            Unit[] eraseVector = d.getEraseVector();
+            Unit[] addVector = d.getAddVector();
+            double[] erases = erase[i];
+            double[] adds = add[i];
+            for (int j = 0; j < memoryWidth; j++) {
+                erases[j] = Sigmoid.getValue(eraseVector[j].value);
+                adds[j] = Sigmoid.getValue(addVector[j].value);
             }
         }
-        for (int i = 0; i < CellCountN; i++) {
-            Unit[] oldRow = _oldMemory.Data[i];
+
+        final NTMMemory p = parent();
+
+
+
+        for (int i = 0; i < memoryHeight; i++) {
+
+            Unit[] oldRow = p.data[i];
             double[] erasure = erasures[i];
-            Unit[] row = Data[i];
-            for (int j = 0; j < CellSizeM; j++) {
+            Unit[] row = data[i];
+            for (int j = 0; j < memoryWidth; j++) {
                 Unit oldCell = oldRow[j];
-                double erase = 1;
-                double add = 0;
-                for (int k = 0; k < HeadCount; k++) {
-                    HeadSetting headSetting = HeadSettings[k];
-                    double addressingValue = headSetting.addressingVector[i].Value;
-                    erase *= (1 - (addressingValue * _erase[k][j]));
-                    add += addressingValue * _add[k][j];
+                double erase = 1.0;
+                double add = 0.0;
+                for (int k = 0; k < h; k++) {
+                    HeadSetting headSetting = this.heading[k];
+                    double addressingValue = headSetting.addressingVector[i].value;
+                    erase *= (1.0 - (addressingValue * this.erase[k][j]));
+                    add += addressingValue * this.add[k][j];
                 }
                 erasure[j] = erase;
-                row[j].Value += (erase * oldCell.Value) + add;
+                row[j].value += (erase * oldCell.value) + add;
             }
         }
+    }
+
+    private int getWidth() {
+        return memoryWidth;
     }
 
     public void backwardErrorPropagation() {
-        for (int i = 0; i < HeadCount; i++) {
-            HeadSetting headSetting = HeadSettings[i];
-            double[] erase = _erase[i];
-            double[] add = _add[i];
-            Head head = _heads[i];
+        for (int i = 0; i < headNum(); i++) {
+            HeadSetting headSetting = heading[i];
+            double[] erase = this.erase[i];
+            double[] add = this.add[i];
+            Head head = heads[i];
             headSettingGradientUpdate(i, erase, add, headSetting);
             eraseAndAddGradientUpdate(i, erase, add, headSetting, head);
         }
@@ -82,83 +120,98 @@ public class NTMMemory {
     }
 
     private void memoryGradientUpdate() {
-        for (int i = 0; i < CellCountN; i++) {
-            Unit[] oldDataVector = _oldMemory.Data[i];
-            Unit[] newDataVector = Data[i];
-            for (int j = 0; j < CellSizeM; j++) {
-                double gradient = 1;
-                for (int q = 0; q < HeadCount; q++) {
-                    gradient *= 1 - (HeadSettings[q].addressingVector[i].Value * _erase[q][j]);
+        final int h = headNum();
+
+        final NTMMemory p = parent();
+
+        for (int i = 0; i < memoryHeight; i++) {
+
+            Unit[] oldDataVector = p.data[i];
+            Unit[] newDataVector = data[i];
+            for (int j = 0; j < memoryWidth; j++) {
+                double gradient = 1.0;
+
+                for (int q = 0; q < h; q++) {
+                    gradient *= 1.0 - (heading[q].addressingVector[i].value * erase[q][j]);
                 }
-                oldDataVector[j].gradient += gradient * newDataVector[j].gradient;
+                oldDataVector[j].grad += gradient * newDataVector[j].grad;
             }
         }
     }
 
     private void eraseAndAddGradientUpdate(int headIndex, double[] erase, double[] add, HeadSetting headSetting, Head head) {
         Unit[] addVector = head.getAddVector();
-        for (int j = 0; j < CellSizeM; j++) {
-            double gradientErase = 0;
-            double gradientAdd = 0;
-            for (int k = 0; k < CellCountN; k++) {
-                Unit[] row = Data[k];
-                double itemGradient = row[j].gradient;
-                double addressingVectorItemValue = headSetting.addressingVector[k].Value;
+
+        final int h = headNum();
+
+        final NTMMemory p = parent();
+
+        for (int j = 0; j < memoryWidth; j++) {
+            double gradientErase = 0.0;
+            double gradientAdd = 0.0;
+            for (int k = 0; k < memoryHeight; k++) {
+                Unit[] row = data[k];
+                double itemGradient = row[j].grad;
+                double addressingVectorItemValue = headSetting.addressingVector[k].value;
                 //Gradient of Erase vector
-                double gradientErase2 = _oldMemory.Data[k][j].Value;
-                for (int q = 0; q < HeadCount; q++) {
+                double gradientErase2 = p.data[k][j].value;
+                for (int q = 0; q < h; q++) {
                     if (q == headIndex)
                         continue;
 
-                    gradientErase2 *= 1 - (HeadSettings[q].addressingVector[k].Value * _erase[q][j]);
+                    gradientErase2 *= 1.0 - (heading[q].addressingVector[k].value * this.erase[q][j]);
                 }
                 gradientErase += itemGradient * gradientErase2 * (-addressingVectorItemValue);
                 //Gradient of Add vector
                 gradientAdd += itemGradient * addressingVectorItemValue;
             }
             double e = erase[j];
-            head.getEraseVector()[j].gradient += gradientErase * e * (1.0 - e);
+            head.getEraseVector()[j].grad += gradientErase * e * (1.0 - e);
             double a = add[j];
-            addVector[j].gradient += gradientAdd * a * (1.0 - a);
+            addVector[j].grad += gradientAdd * a * (1.0 - a);
         }
     }
 
     private void headSettingGradientUpdate(int headIndex, double[] erase, double[] add, HeadSetting headSetting) {
-        for (int j = 0; j < CellCountN; j++) {
+        final int h = headNum();
+
+        final NTMMemory p = parent();
+
+        for (int j = 0; j < memoryHeight; j++) {
             //Gradient of head settings
-            Unit[] row = Data[j];
-            Unit[] oldRow = _oldMemory.Data[j];
-            double gradient = 0;
-            for (int k = 0; k < CellSizeM; k++) {
+            Unit[] row = data[j];
+            Unit[] oldRow = p.data[j];
+            double gradient = 0.0;
+            for (int k = 0; k < memoryWidth; k++) {
                 Unit data = row[k];
-                double oldDataValue = oldRow[k].Value;
-                for (int q = 0; q < HeadCount; q++) {
+                double oldDataValue = oldRow[k].value;
+                for (int q = 0; q < h; q++) {
                     if (q == headIndex)
                         continue;
 
 
-                    HeadSetting setting = HeadSettings[q];
-                    oldDataValue *= (1.0 - (setting.addressingVector[j].Value * _erase[q][k]));
+                    HeadSetting setting = heading[q];
+                    oldDataValue *= (1.0 - (setting.addressingVector[j].value * this.erase[q][k]));
                 }
-                gradient += ((oldDataValue * (-erase[k])) + add[k]) * data.gradient;
+                gradient += ((oldDataValue * (-erase[k])) + add[k]) * data.grad;
             }
-            headSetting.addressingVector[j].gradient += gradient;
+            headSetting.addressingVector[j].grad += gradient;
         }
     }
 
     public ContentAddressing[] getContentAddressing() {
-        return ContentAddressing.getVector(HeadCount, i -> _oldSimilarities[i]);
+        return ContentAddressing.getVector(headNum(), i -> oldSimilar[i]);
     }
 
     public void updateWeights(IWeightUpdater weightUpdater) {
-        for (Object __dummyForeachVar1 : _oldSimilarities) {
+        for (Object __dummyForeachVar1 : oldSimilar) {
             BetaSimilarity[] betaSimilarities = (BetaSimilarity[]) __dummyForeachVar1;
             for (Object __dummyForeachVar0 : betaSimilarities) {
                 BetaSimilarity betaSimilarity = (BetaSimilarity) __dummyForeachVar0;
                 weightUpdater.updateWeight(betaSimilarity.BetaSimilarityMeasure);
             }
         }
-        weightUpdater.updateWeight(Data);
+        weightUpdater.updateWeight(data);
     }
 
     private static double[][] getTensor2(int x, int y) {

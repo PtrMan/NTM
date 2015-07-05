@@ -14,7 +14,7 @@ public class Head
     private final Unit _gate;
     private final Unit _shift;
     private final Unit _gama;
-    private final int _memoryRowSize;
+    private final int width;
     //M
     public Unit[] getKeyVector() {
         return _keyVector;
@@ -44,11 +44,11 @@ public class Head
         return _addVector;
     }
 
-    public Head(int memoryRowSize) {
-        _memoryRowSize = memoryRowSize;
-        _eraseVector = UnitFactory.getVector(memoryRowSize);
-        _addVector = UnitFactory.getVector(memoryRowSize);
-        _keyVector = UnitFactory.getVector(memoryRowSize);
+    public Head(int memoryWidth) {
+        width = memoryWidth;
+        _eraseVector = UnitFactory.getVector(memoryWidth);
+        _addVector = UnitFactory.getVector(memoryWidth);
+        _keyVector = UnitFactory.getVector(memoryWidth);
         _beta = new Unit(0.0);
         _gate = new Unit(0.0);
         _shift = new Unit(0.0);
@@ -60,7 +60,7 @@ public class Head
     }
 
     public int getUnitSize() {
-        return getUnitSize(_memoryRowSize);
+        return getUnitSize(width);
     }
 
     public static Head[] getVector(int length, Function<Integer, Integer> constructorParamGetter) {
@@ -73,37 +73,37 @@ public class Head
     }
 
     public Unit get___idx(int i) {
-        if (i < _memoryRowSize)
+        if (i < width)
         {
             return _eraseVector[i];
         }
          
-        if (i < (_memoryRowSize * 2))
+        if (i < (width * 2))
         {
-            return _addVector[i - _memoryRowSize];
+            return _addVector[i - width];
         }
          
-        if (i < (_memoryRowSize * 3))
+        if (i < (width * 3))
         {
-            return _keyVector[i - (2 * _memoryRowSize)];
+            return _keyVector[i - (2 * width)];
         }
          
-        if (i == (_memoryRowSize * 3))
+        if (i == (width * 3))
         {
             return _beta;
         }
          
-        if (i == (_memoryRowSize * 3) + 1)
+        if (i == (width * 3) + 1)
         {
             return _gate;
         }
          
-        if (i == (_memoryRowSize * 3) + 2)
+        if (i == (width * 3) + 2)
         {
             return _shift;
         }
          
-        if (i == (_memoryRowSize * 3) + 3)
+        if (i == (width * 3) + 3)
         {
             return _gama;
         }

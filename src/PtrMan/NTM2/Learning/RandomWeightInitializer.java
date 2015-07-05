@@ -16,7 +16,7 @@ public class RandomWeightInitializer implements WeightUpdaterBase {
 
     @Override
     public void updateWeight(Unit data) {
-        data.Value = _rand.nextDouble() - 0.5;
+        data.value = _rand.nextDouble() - 0.5;
     }
 
 }

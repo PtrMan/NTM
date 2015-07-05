@@ -6,7 +6,7 @@ import java.util.Random;
 
 public class SequenceGenerator
 {
-    public static final Random Rand = new Random(8);
+    public static final Random Rand = new Random(8L);
     public static Pair<double[][], double[][]> generateSequence(int length, int vectorSize) {
         double[][] data = new double[length][vectorSize];
         for (int i = 0;i < length;i++)
@@ -26,7 +26,7 @@ public class SequenceGenerator
             //input[i] = new double[inputVectorSize]; REMOVE
             if (i == 0)
             {
-                input[i][vectorSize] = 1;
+                input[i][vectorSize] = 1.0;
             }
             else if (i <= length)
             {
@@ -34,7 +34,7 @@ public class SequenceGenerator
             }
             else if (i == (length + 1))
             {
-                input[i][vectorSize + 1] = 1;
+                input[i][vectorSize + 1] = 1.0;
             }
                
         }

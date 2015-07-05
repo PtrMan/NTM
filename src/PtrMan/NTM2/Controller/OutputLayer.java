@@ -10,36 +10,38 @@ public class OutputLayer
     private final int _outputSize;
     private final int _controllerSize;
     private final int _headCount;
-    private final int _memoryUnitSizeM;
+    private final int memoryWidth;
     private final int _headUnitSize;
     //Weights from controller to output
     private final Unit[][] _hiddenToOutputLayerWeights;
     //Weights from controller to head
     private final Unit[][][] _hiddenToHeadsWeights;
     //Output layer neurons
-    public Unit[] OutputLayerNeurons;
+    public Unit[] outputs;
     //Heads neurons
-    public final Head[] HeadsNeurons;
+    public final Head[] heads;
+
     public OutputLayer(int outputSize, int controllerSize, int headCount, int memoryUnitSizeM) {
         _outputSize = outputSize;
         _controllerSize = controllerSize;
         _headCount = headCount;
-        _memoryUnitSizeM = memoryUnitSizeM;
+        memoryWidth = memoryUnitSizeM;
         _headUnitSize = Head.getUnitSize(memoryUnitSizeM);
         _hiddenToOutputLayerWeights = UnitFactory.getTensor2(outputSize,controllerSize + 1);
         _hiddenToHeadsWeights = UnitFactory.getTensor3(headCount,_headUnitSize,controllerSize + 1);
-        HeadsNeurons = new Head[headCount];
+        heads = new Head[headCount];
+        outputs = null;
     }
 
-    private OutputLayer(Unit[][] hiddenToOutputLayerWeights, Unit[][][] hiddenToHeadsWeights, Unit[] outputLayerNeurons, Head[] headsNeurons, int headCount, int outputSize, int controllerSize, int memoryUnitSizeM, int headUnitSize) {
+    private OutputLayer(Unit[][] hiddenToOutputLayerWeights, Unit[][][] hiddenToHeadsWeights, Unit[] outputs, Head[] heads, int headCount, int outputSize, int controllerSize, int memoryUnitSizeM, int headUnitSize) {
         _hiddenToOutputLayerWeights = hiddenToOutputLayerWeights;
         _hiddenToHeadsWeights = hiddenToHeadsWeights;
-        HeadsNeurons = headsNeurons;
+        this.heads = heads;
         _controllerSize = controllerSize;
         _outputSize = outputSize;
-        OutputLayerNeurons = outputLayerNeurons;
+        this.outputs = outputs;
         _headCount = headCount;
-        _memoryUnitSizeM = memoryUnitSizeM;
+        memoryWidth = memoryUnitSizeM;
         _headUnitSize = headUnitSize;
     }
 
@@ -47,34 +49,34 @@ public class OutputLayer
         for (int i = 0;i < _outputSize;i++)
         {
             //Foreach neuron in classic output layer
-            double sum = 0;
+            double sum = 0.0;
             Unit[] weights = _hiddenToOutputLayerWeights[i];
             for (int j = 0;j < _controllerSize;j++)
             {
                 //Foreach input from hidden layer
-                sum += weights[j].Value * hiddenLayer.neurons[j].Value;
+                sum += weights[j].value * hiddenLayer.neurons[j].value;
             }
             //Plus threshold
-            sum += weights[_controllerSize].Value;
-            OutputLayerNeurons[i].Value = Sigmoid.getValue(sum);
+            sum += weights[_controllerSize].value;
+            outputs[i].value = Sigmoid.getValue(sum);
         }
         for (int i = 0;i < _headCount;i++)
         {
             //Foreach neuron in head output layer
             Unit[][] headsWeights = _hiddenToHeadsWeights[i];
-            Head head = HeadsNeurons[i];
+            Head head = heads[i];
             for (int j = 0;j < headsWeights.length;j++)
             {
-                double sum = 0;
+                double sum = 0.0;
                 Unit[] headWeights = headsWeights[j];
                 for (int k = 0;k < _controllerSize;k++)
                 {
                     //Foreach input from hidden layer
-                    sum += headWeights[k].Value * hiddenLayer.neurons[k].Value;
+                    sum += headWeights[k].value * hiddenLayer.neurons[k].value;
                 }
                 //Plus threshold
-                sum += headWeights[_controllerSize].Value;
-                head.get___idx(j).Value += sum;
+                sum += headWeights[_controllerSize].value;
+                head.get___idx(j).value += sum;
             }
         }
     }
@@ -84,8 +86,8 @@ public class OutputLayer
         try
         {
             Unit[] outputLayer = UnitFactory.getVector(_outputSize);
-            Head[] heads = Head.getVector(_headCount, i -> _memoryUnitSizeM);
-            return new OutputLayer(_hiddenToOutputLayerWeights, _hiddenToHeadsWeights, outputLayer, heads, _headCount, _outputSize, _controllerSize, _memoryUnitSizeM, _headUnitSize);
+            Head[] heads = Head.getVector(_headCount, i -> memoryWidth);
+            return new OutputLayer(_hiddenToOutputLayerWeights, _hiddenToHeadsWeights, outputLayer, heads, _headCount, _outputSize, _controllerSize, memoryWidth, _headUnitSize);
         }
         catch (RuntimeException __dummyCatchVar0)
         {
@@ -102,22 +104,22 @@ public class OutputLayer
         for (int j = 0;j < _outputSize;j++)
         {
             //Delta
-            OutputLayerNeurons[j].gradient = OutputLayerNeurons[j].Value - knownOutput[j];
+            outputs[j].grad = outputs[j].value - knownOutput[j];
         }
         for (int j = 0;j < _outputSize;j++)
         {
             //Output error backpropagation
-            Unit unit = OutputLayerNeurons[j];
+            Unit unit = outputs[j];
             Unit[] weights = _hiddenToOutputLayerWeights[j];
             for (int i = 0;i < _controllerSize;i++)
             {
-                hiddenLayer.neurons[i].gradient += weights[i].Value * unit.gradient;
+                hiddenLayer.neurons[i].grad += weights[i].value * unit.grad;
             }
         }
         for (int j = 0;j < _headCount;j++)
         {
             //Heads error backpropagation
-            Head head = HeadsNeurons[j];
+            Head head = heads[j];
             Unit[][] weights = _hiddenToHeadsWeights[j];
             for (int k = 0;k < _headUnitSize;k++)
             {
@@ -125,7 +127,7 @@ public class OutputLayer
                 Unit[] weightsK = weights[k];
                 for (int i = 0;i < _controllerSize;i++)
                 {
-                    hiddenLayer.neurons[i].gradient += unit.gradient * weightsK[i].Value;
+                    hiddenLayer.neurons[i].grad += unit.grad * weightsK[i].value;
                 }
             }
         }
@@ -133,18 +135,18 @@ public class OutputLayer
         {
             //Wyh1 error backpropagation
             Unit[] wyh1I = _hiddenToOutputLayerWeights[i];
-            double yGrad = OutputLayerNeurons[i].gradient;
+            double yGrad = outputs[i].grad;
             for (int j = 0;j < _controllerSize;j++)
             {
-                wyh1I[j].gradient += yGrad * hiddenLayer.neurons[j].Value;
+                wyh1I[j].grad += yGrad * hiddenLayer.neurons[j].value;
             }
-            wyh1I[_controllerSize].gradient += yGrad;
+            wyh1I[_controllerSize].grad += yGrad;
         }
         for (int i = 0;i < _headCount;i++)
         {
             //TODO refactor names
             //Wuh1 error backpropagation
-            Head head = HeadsNeurons[i];
+            Head head = heads[i];
             Unit[][] units = _hiddenToHeadsWeights[i];
             for (int j = 0;j < _headUnitSize;j++)
             {
@@ -153,9 +155,9 @@ public class OutputLayer
                 for (int k = 0;k < _controllerSize;k++)
                 {
                     Unit unit = hiddenLayer.neurons[k];
-                    wuh1ij[k].gradient += headUnit.gradient * unit.Value;
+                    wuh1ij[k].grad += headUnit.grad * unit.value;
                 }
-                wuh1ij[_controllerSize].gradient += headUnit.gradient;
+                wuh1ij[_controllerSize].grad += headUnit.grad;
             }
         }
     }
@@ -173,10 +175,10 @@ public class OutputLayer
     }
 
     public double[] getOutput() {
-        double[] output = new double[OutputLayerNeurons.length];
-        for (int i = 0;i < OutputLayerNeurons.length;i++)
+        double[] output = new double[outputs.length];
+        for (int i = 0;i < outputs.length;i++)
         {
-            output[i] = OutputLayerNeurons[i].Value;
+            output[i] = outputs[i].value;
         }
         return output;
     }

@@ -12,79 +12,79 @@ import org.javatuples.Pair;
 
 public class MemoryState   
 {
-    private final NTMMemory _memory;
-    private HeadSetting[] _headSettings;
-    public ReadData[] ReadData_;
-    private ContentAddressing[] _contentAddressings;
+    public final NTMMemory memory;
+    public final HeadSetting[] heading;
+    public final ReadData[] read;
+
     public MemoryState(NTMMemory memory) {
-        _memory = memory;
+        this.memory = memory;
+
+        //TODO just pass the array and dont involve a lambda here
+        heading = HeadSetting.getVector(this.memory, i -> new Pair<>(this.memory.memoryHeight, this.memory.getContentAddressing()[i]));
+        read = ReadData.getVector(this.memory.headNum(), i -> new Pair<>(heading[i], this.memory));
     }
 
     public MemoryState(NTMMemory memory, HeadSetting[] headSettings, ReadData[] readDatas) {
-        _memory = memory;
-        _headSettings = headSettings;
-        ReadData_ = readDatas;
+        this.memory = memory;
+        heading = headSettings;
+        read = readDatas;
     }
 
-    public void doInitialReading() {
-        _contentAddressings = _memory.getContentAddressing();
-        _headSettings = HeadSetting.getVector(_memory.HeadCount, i -> new Pair<>(_memory.CellCountN, _contentAddressings[i]));
-        ReadData_ = ReadData.getVector(_memory.HeadCount, i -> new Pair<>(_headSettings[i], _memory));
-    }
 
     public void backwardErrorPropagation() {
-        for (Object __dummyForeachVar0 : ReadData_)
+        for (Object __dummyForeachVar0 : read)
         {
             ReadData readData = (ReadData)__dummyForeachVar0;
             readData.backwardErrorPropagation();
         }
-        _memory.backwardErrorPropagation();
-        for (Object __dummyForeachVar2 : _memory.HeadSettings)
+        memory.backwardErrorPropagation();
+        for (Object __dummyForeachVar2 : memory.heading)
         {
             HeadSetting headSetting = (HeadSetting)__dummyForeachVar2;
             headSetting.backwardErrorPropagation();
             headSetting.shiftedAddressing.backwardErrorPropagation();
-            headSetting.shiftedAddressing.GatedAddressing.backwardErrorPropagation();
-            headSetting.shiftedAddressing.GatedAddressing.ContentVector.backwardErrorPropagation();
-            for (Object __dummyForeachVar1 : headSetting.shiftedAddressing.GatedAddressing.ContentVector.BetaSimilarities)
+            headSetting.shiftedAddressing.gatedAddressing.backwardErrorPropagation();
+            headSetting.shiftedAddressing.gatedAddressing.content.backwardErrorPropagation();
+            for (Object __dummyForeachVar1 : headSetting.shiftedAddressing.gatedAddressing.content.BetaSimilarities)
             {
                 BetaSimilarity similarity = (BetaSimilarity)__dummyForeachVar1;
                 similarity.backwardErrorPropagation();
-                similarity.Similarity.backwardErrorPropagation();
+                similarity.measure.backwardErrorPropagation();
             }
         }
     }
 
     public void backwardErrorPropagation2() {
-        for (int i = 0;i < ReadData_.length;i++) {
-            ReadData_[i].backwardErrorPropagation();
-            for (int j = 0;j < ReadData_[i].HeadSetting.addressingVector.length;j++) {
-                _contentAddressings[i].ContentVector[j].gradient += ReadData_[i].HeadSetting.addressingVector[j].gradient;
+        ContentAddressing[] content = memory.getContentAddressing();
+        for (int i = 0;i < read.length;i++) {
+            read[i].backwardErrorPropagation();
+            for (int j = 0;j < read[i].HeadSetting.addressingVector.length;j++) {
+                content[i].ContentVector[j].grad += read[i].HeadSetting.addressingVector[j].grad;
             }
-            _contentAddressings[i].backwardErrorPropagation();
+            content[i].backwardErrorPropagation();
         }
     }
 
     public MemoryState process(Head[] heads) {
         final int headCount = heads.length;
-        final int memoryColumnsN = _memory.CellCountN;
+        final int memoryColumnsN = memory.memoryHeight;
         ReadData[] newReadDatas = new ReadData[headCount];
         HeadSetting[] newHeadSettings = new HeadSetting[headCount];
         for (int i = 0;i < headCount;i++) {
             Head head = heads[i];
-            BetaSimilarity[] similarities = new BetaSimilarity[_memory.CellCountN];
+            BetaSimilarity[] similarities = new BetaSimilarity[memory.memoryHeight];
             for (int j = 0;j < memoryColumnsN;j++) {
-                Unit[] memoryColumn = _memory.Data[j];
+                Unit[] memoryColumn = memory.data[j];
                 SimilarityMeasure similarity = new SimilarityMeasure(new CosineSimilarityFunction(), head.getKeyVector(), memoryColumn);
                 similarities[j] = new BetaSimilarity(head.getBeta(),similarity);
             }
             ContentAddressing ca = new ContentAddressing(similarities);
-            GatedAddressing ga = new GatedAddressing(head.getGate(), ca, _headSettings[i]);
+            GatedAddressing ga = new GatedAddressing(head.getGate(), ca, heading[i]);
             ShiftedAddressing sa = new ShiftedAddressing(head.getShift(),ga);
             newHeadSettings[i] = new HeadSetting(head.getGamma(),sa);
-            newReadDatas[i] = new ReadData(newHeadSettings[i], _memory);
+            newReadDatas[i] = new ReadData(newHeadSettings[i], memory);
         }
-        NTMMemory newMemory = new NTMMemory(newHeadSettings, heads, _memory);
+        NTMMemory newMemory = new NTMMemory(newHeadSettings, heads, memory);
         return new MemoryState(newMemory, newHeadSettings, newReadDatas);
     }
 

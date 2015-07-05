@@ -10,7 +10,7 @@ public class HiddenLayer
     public final IDifferentiableFunction activation;
     public final int inputs;
     public final int heads;
-    public final int _memoryUnitSizeM;
+    public final int memoryUnitSizeM;
 
     //Controller hidden layer threshold weights
     public final Unit[] hiddenLayerThresholds;
@@ -27,9 +27,9 @@ public class HiddenLayer
     public HiddenLayer(int controllerSize, int inputSize, int headCount, int memoryUnitSizeM) {
         inputs = inputSize;
         heads = headCount;
-        _memoryUnitSizeM = memoryUnitSizeM;
+        this.memoryUnitSizeM = memoryUnitSizeM;
         this.neurons = UnitFactory.getVector(controllerSize);
-        activation = new SigmoidActivationFunction(0.0);
+        activation = new SigmoidActivationFunction();
         readDataToHiddenLayerWeights = UnitFactory.getTensor3(controllerSize,headCount,memoryUnitSizeM);
         inputToHiddenLayerWeights = UnitFactory.getTensor2(controllerSize,inputSize);
         hiddenLayerThresholds = UnitFactory.getVector(controllerSize);
@@ -42,7 +42,7 @@ public class HiddenLayer
         neurons = hiddenLayer;
         inputs = inputSize;
         heads = headCount;
-        _memoryUnitSizeM = memoryUnitSizeM;
+        this.memoryUnitSizeM = memoryUnitSizeM;
         activation = activationFunction;
     }
 
@@ -52,7 +52,7 @@ public class HiddenLayer
         {
             return new HiddenLayer(readDataToHiddenLayerWeights, inputToHiddenLayerWeights, hiddenLayerThresholds,
                     UnitFactory.getVector(getControllers()),
-                    inputs, heads,_memoryUnitSizeM, activation);
+                    inputs, heads, memoryUnitSizeM, activation);
         }
         catch (RuntimeException __dummyCatchVar0)
         {
@@ -65,7 +65,7 @@ public class HiddenLayer
     
     }
 
-    public int getControllers() {
+    public final int getControllers() {
         return neurons.length;
     }
 
@@ -73,12 +73,12 @@ public class HiddenLayer
     public void forwardPropagation(double[] input, ReadData[] readData) {
         for (int neuronIndex = 0; neuronIndex < getControllers(); neuronIndex++) {
             //Foreach neuron in hidden layer
-            double sum = 0;
+            double sum = 0.0;
             sum = getReadDataContributionToHiddenLayer(neuronIndex, readData, sum);
             sum = getInputContributionToHiddenLayer(neuronIndex, input, sum);
             sum = getThresholdContributionToHiddenLayer(neuronIndex,sum);
             //Set new controller unit value
-            neurons[neuronIndex].Value = activation.value(sum);
+            neurons[neuronIndex].value = activation.value(sum);
         }
     }
 
@@ -88,9 +88,9 @@ public class HiddenLayer
         {
             Unit[] headWeights = readWeightsForEachHead[headIndex];
             ReadData read = readData[headIndex];
-            for (int memoryCellIndex = 0;memoryCellIndex < _memoryUnitSizeM;memoryCellIndex++)
+            for (int memoryCellIndex = 0;memoryCellIndex < memoryUnitSizeM;memoryCellIndex++)
             {
-                tempSum += headWeights[memoryCellIndex].Value * read.ReadVector[memoryCellIndex].Value;
+                tempSum += headWeights[memoryCellIndex].value * read.ReadVector[memoryCellIndex].value;
             }
         }
         return tempSum;
@@ -99,13 +99,13 @@ public class HiddenLayer
     private double getInputContributionToHiddenLayer(int neuronIndex, double[] input, double tempSum) {
         Unit[] inputWeights = inputToHiddenLayerWeights[neuronIndex];
         for (int j = 0;j < inputWeights.length;j++) {
-            tempSum += inputWeights[j].Value * input[j];
+            tempSum += inputWeights[j].value * input[j];
         }
         return tempSum;
     }
 
     private double getThresholdContributionToHiddenLayer(int neuronIndex, double tempSum) {
-        tempSum += hiddenLayerThresholds[neuronIndex].Value;
+        tempSum += hiddenLayerThresholds[neuronIndex].value;
         return tempSum;
     }
 
@@ -137,7 +137,7 @@ public class HiddenLayer
             Unit unit = neurons[i];
             //TODO use derivative of activation function
             //hiddenLayerGradients[i] = unit.Gradient * _activationFunction.Derivative(unit.Value)
-            hiddenLayerGradients[i] = unit.gradient * unit.Value * (1.0 - unit.Value);
+            hiddenLayerGradients[i] = unit.grad * unit.value * (1.0 - unit.value);
         }
         return hiddenLayerGradients;
     }
@@ -149,9 +149,9 @@ public class HiddenLayer
             for (int headIndex = 0;headIndex < heads;headIndex++) {
                 ReadData readData = reads[headIndex];
                 Unit[] neuronToHeadReadDataWeights = neuronToReadDataWeights[headIndex];
-                for (int memoryCellIndex = 0;memoryCellIndex < _memoryUnitSizeM;memoryCellIndex++) {
-                    readData.ReadVector[memoryCellIndex].gradient += hiddenLayerGradient * neuronToHeadReadDataWeights[memoryCellIndex].Value;
-                    neuronToHeadReadDataWeights[memoryCellIndex].gradient += hiddenLayerGradient * readData.ReadVector[memoryCellIndex].Value;
+                for (int memoryCellIndex = 0;memoryCellIndex < memoryUnitSizeM;memoryCellIndex++) {
+                    readData.ReadVector[memoryCellIndex].grad += hiddenLayerGradient * neuronToHeadReadDataWeights[memoryCellIndex].value;
+                    neuronToHeadReadDataWeights[memoryCellIndex].grad += hiddenLayerGradient * readData.ReadVector[memoryCellIndex].value;
                 }
             }
         }
@@ -167,13 +167,13 @@ public class HiddenLayer
 
     private void updateInputGradient(double hiddenLayerGradient, Unit[] inputToHiddenNeuronWeights, double[] input) {
         for (int inputIndex = 0;inputIndex < inputs;inputIndex++) {
-            inputToHiddenNeuronWeights[inputIndex].gradient += hiddenLayerGradient * input[inputIndex];
+            inputToHiddenNeuronWeights[inputIndex].grad += hiddenLayerGradient * input[inputIndex];
         }
     }
 
     private void updateHiddenLayerThresholdsGradients(double[] hiddenLayerGradients) {
         for (int neuronIndex = 0;neuronIndex < getControllers(); neuronIndex++) {
-            hiddenLayerThresholds[neuronIndex].gradient += hiddenLayerGradients[neuronIndex];
+            hiddenLayerThresholds[neuronIndex].grad += hiddenLayerGradients[neuronIndex];
         }
     }
 

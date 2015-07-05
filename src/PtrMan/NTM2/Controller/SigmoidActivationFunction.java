@@ -7,6 +7,11 @@ package NTM2.Controller;
 public class SigmoidActivationFunction   implements IDifferentiableFunction
 {
     private final double _alpha;
+
+    public SigmoidActivationFunction() {
+        this(1.0);
+    }
+
     public SigmoidActivationFunction(double alpha) {
         _alpha = alpha;
     }

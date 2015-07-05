@@ -21,7 +21,7 @@ public class Program
         double[] errors = new double[100];
         for (int i = 0;i < 100;i++)
         {
-            errors[i] = 1;
+            errors[i] = 1.0;
         }
 
         final int seed = 32702;
@@ -33,16 +33,18 @@ public class Program
         System.out.println(seed);
 
         //TODO remove rand
-        final int memoryM = 20;
+        final int memoryWidth = 20;
         final int memoryN = 128;
         final int headsCount = 1;
         final int controllerSize = 100;
-        NeuralTuringMachine machine = new NeuralTuringMachine(vectorSize + 2,vectorSize,controllerSize,headsCount,memoryN,memoryM,new RandomWeightInitializer(rand));
+
+        NeuralTuringMachine machine = new NeuralTuringMachine(vectorSize + 2,vectorSize,controllerSize,headsCount,memoryN,memoryWidth,new RandomWeightInitializer(rand));
+
         //TODO extract weight count calculation
-        int headUnitSize = Head.getUnitSize(memoryM);
+        int headUnitSize = Head.getUnitSize(memoryWidth);
         final int outputSize = vectorSize;
         final int inputSize = vectorSize + 2;
-        int weightsCount = (headsCount * memoryN) + (memoryN * memoryM) + (controllerSize * headsCount * memoryM) + (controllerSize * inputSize) + (controllerSize)+(outputSize * (controllerSize + 1)) + (headsCount * headUnitSize * (controllerSize + 1));
+        int weightsCount = (headsCount * memoryN) + (memoryN * memoryWidth) + (controllerSize * headsCount * memoryWidth) + (controllerSize * inputSize) + (controllerSize)+(outputSize * (controllerSize + 1)) + (headsCount * headUnitSize * (controllerSize + 1));
         System.out.println(weightsCount);
         RMSPropWeightUpdater rmsPropWeightUpdater = new RMSPropWeightUpdater(weightsCount, 0.95, 0.5, 0.001, 0.001);
         //NeuralTuringMachine machine2 = NeuralTuringMachine.Load(@"NTM2015-03-22T210312");
@@ -53,7 +55,7 @@ public class Program
             long timeBefore = System.nanoTime();
             List<double[]> machinesOutput = teacher.train(sequence.getValue0(), sequence.getValue1());
             long timeAfter = System.nanoTime();
-            times[i % 100] = (timeAfter - timeBefore) / 1000000;
+            times[i % 100] = (timeAfter - timeBefore) / 1000000L;
             double error = calculateLogLoss(sequence.getValue1(), machinesOutput);
             double averageError = error / (sequence.getValue1().length * sequence.getValue1()[0].length);
             errors[i % 100] = averageError;
@@ -67,8 +69,10 @@ public class Program
         // TODO? machine.save("NTM" + DateTime.Now.ToString("s").Replace(":", ""));
     }
 
+    final static double log2 = Math.log(2.0);
+
     private static double calculateLogLoss(double[][] knownOutput, List<double[]> machinesOutput) {
-        double totalLoss = 0;
+        double totalLoss = 0.0;
         int okt = knownOutput.length - ((knownOutput.length - 2) / 2);
         for (int t = 0;t < knownOutput.length;t++)
         {
@@ -76,9 +80,9 @@ public class Program
             {
                 double expected = knownOutput[t][i];
                 double real = machinesOutput.get(t)[i];
-                if (t >= okt)
-                {
-                    totalLoss += (expected * (Math.log(real)/Math.log(2.0))) + ((1 - expected) * (Math.log(1 - real)/Math.log(2.0)));
+                if (t >= okt) {
+
+                    totalLoss += (expected * (Math.log(real)/ log2)) + ((1.0 - expected) * (Math.log(1.0 - real)/ log2));
                 }
                  
             }
@@ -93,7 +97,7 @@ public class Program
             result += val;
         }
 
-        return result / (double)errors.length;
+        return result / errors.length;
     }
 
 }

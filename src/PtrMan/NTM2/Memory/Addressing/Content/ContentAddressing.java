@@ -15,34 +15,34 @@ public class ContentAddressing
         BetaSimilarities = betaSimilarities;
         ContentVector = UnitFactory.getVector(betaSimilarities.length);
         //Subtracting max increase numerical stability
-        double max = BetaSimilarities[0].BetaSimilarityMeasure.Value;
+        double max = BetaSimilarities[0].BetaSimilarityMeasure.value;
         for( BetaSimilarity iterationBetaSimilarity : betaSimilarities ) {
-            max = Math.max(max, iterationBetaSimilarity.BetaSimilarityMeasure.Value);
+            max = Math.max(max, iterationBetaSimilarity.BetaSimilarityMeasure.value);
         }
 
-        double sum = 0;
+        double sum = 0.0;
         for (int i = 0;i < BetaSimilarities.length;i++) {
             BetaSimilarity unit = BetaSimilarities[i];
-            double weight = Math.exp(unit.BetaSimilarityMeasure.Value - max);
-            ContentVector[i].Value = weight;
+            double weight = Math.exp(unit.BetaSimilarityMeasure.value - max);
+            ContentVector[i].value = weight;
             sum += weight;
         }
         for (Object __dummyForeachVar0 : ContentVector) {
             Unit unit = (Unit)__dummyForeachVar0;
-            unit.Value /= sum;
+            unit.value /= sum;
         }
     }
 
     public void backwardErrorPropagation() {
-        double gradient = 0;
+        double gradient = 0.0;
         for (Object __dummyForeachVar1 : ContentVector)
         {
             Unit unit = (Unit)__dummyForeachVar1;
-            gradient += unit.gradient * unit.Value;
+            gradient += unit.grad * unit.value;
         }
         for (int i = 0;i < ContentVector.length;i++)
         {
-            BetaSimilarities[i].BetaSimilarityMeasure.gradient += (ContentVector[i].gradient - gradient) * ContentVector[i].Value;
+            BetaSimilarities[i].BetaSimilarityMeasure.grad += (ContentVector[i].grad - gradient) * ContentVector[i].value;
         }
     }
 
