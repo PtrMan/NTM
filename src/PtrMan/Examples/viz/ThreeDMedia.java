@@ -1,11 +1,16 @@
 package Examples.viz;
 
+import com.sun.javafx.tk.PlatformImage;
+import com.sun.javafx.tk.Toolkit;
 import javafx.animation.AnimationTimer;
 import javafx.animation.Interpolator;
 import javafx.animation.RotateTransition;
 import javafx.application.Application;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -17,6 +22,8 @@ import javafx.scene.shape.Shape3D;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
+import java.nio.ByteBuffer;
 
 
 // Display a rotating 3D box with a video projected onto its surface.
@@ -41,18 +48,8 @@ public class ThreeDMedia extends Application {
         box.setTranslateX(SCENE_W / 2);
         box.setTranslateY(SCENE_H / 2);
 
-        // create a media player for the video which loops the video forever.
-        MediaPlayer player = new MediaPlayer(new Media(MEDIA_URL));
-        player.setCycleCount(MediaPlayer.INDEFINITE);
-
-        // create a media view for the video, sized to our specifications.
-        MediaView mediaView = new MediaView(player);
-        mediaView.setPreserveRatio(false);
-        mediaView.setFitWidth(MEDIA_W);
-        mediaView.setFitHeight(MEDIA_H);
-
         // project the video on to the 3D box.
-        //showMediaOnShape3D(box, mediaView);
+        animateTexture(box);
 
         // rotate the box.
         rotateAroundYAxis(box);
@@ -97,7 +94,46 @@ public class ThreeDMedia extends Application {
         stage.show();
     }
 
-       // Project video on to 3D shape.
+    // Project video on to 3D shape.
+    private void animateTexture(Shape3D shape3D) {
+        PhongMaterial material = new PhongMaterial();
+        shape3D.setMaterial(material);
+
+
+
+
+
+
+        WritableImage textureImage = new WritableImage(64,64);
+
+
+        material.setDiffuseMap(textureImage);
+
+
+        AnimationTimer timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+
+                PixelWriter wr = textureImage.getPixelWriter();
+
+                int x = (int)(Math.random() * textureImage.getWidth());
+                int y = (int)(Math.random() * textureImage.getHeight());
+                Color c = Color.hsb(360.0 * Math.random(), 0.85f, 0.85f);
+                wr.setColor(x, y, c);
+
+
+
+                /*public void setPixels(int x, int y, int w, int h,
+                PixelFormat<ByteBuffer> pixelformat,
+                byte buffer[], int offset, int scanlineStride);*/
+
+            }
+        };
+        timer.start();
+    }
+
+
+    // Project video on to 3D shape.
     private void showMediaOnShape3D(Shape3D shape3D, final MediaView mediaView) {
         PhongMaterial material = new PhongMaterial();
         shape3D.setMaterial(material);
