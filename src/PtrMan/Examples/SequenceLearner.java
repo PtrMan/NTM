@@ -58,8 +58,13 @@ abstract public class SequenceLearner {
         int weightsCount = (numHeads * memoryHeight) + (memoryHeight * memoryWidth) + (controllerSize * numHeads * memoryWidth) + (controllerSize * inputSize) + (controllerSize)+(outputSize * (controllerSize + 1)) + (numHeads * headUnitSize * (controllerSize + 1));
         System.out.println("# Weights: "  + weightsCount);
 
+        //public RMSPropWeightUpdater(int weightsCount,
+        // double gradientMomentum,
+        // double deltaMomentum,
+        // double changeMultiplier,
+        // double changeAddConstant) {
         teacher = new BPTTTeacher(machine,
-                new RMSPropWeightUpdater(weightsCount, 0.95, 0.5, 0.001, 0.001));
+                new RMSPropWeightUpdater(weightsCount, 0.75, 0.5, 0.05, 0.005));
 
 
     }

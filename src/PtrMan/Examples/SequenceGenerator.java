@@ -14,12 +14,22 @@ public class SequenceGenerator
         double[][] input = new double[length][vectorSize];
         double[][] output = new double[length][vectorSize];
 
+        boolean direction = Math.random() < 0.5;
+
+
+        int j = (int)(Math.random() * 100);
         for (int i = 0;i < length;i++) {
-            int index = i % vectorSize;
+            int index = j % vectorSize;
             int reflected = (vectorSize-1) - index;
 
             input[i][index] = 1;
             output[i][reflected] = 1;
+
+            if (direction)
+                j++;
+            else
+                j--;
+
         }
 
         return new Pair<>(input, output);
