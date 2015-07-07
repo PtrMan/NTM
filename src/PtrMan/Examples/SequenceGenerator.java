@@ -38,20 +38,21 @@ public class SequenceGenerator
     public static Pair<double[][], double[][]> generateSequenceXOR(int length, int vectorSize) {
         //length = length*1+2; //to be consistent with the WTF sequence below
 
-        length = vectorSize/2;
+        length = (int)(vectorSize * (1.0 + Math.random()));
 
         double[][] input = new double[length][vectorSize];
         double[][] output = new double[length][vectorSize];
 
 
-        int j = (int)(Math.random() * (vectorSize/2));
+        int j = (int)(Math.random() * 153) % (vectorSize/2) + vectorSize/2;
 
         for (int i = 0;i < length;i++) {
-            int index = (j^i) % vectorSize;
+            int index = ((j)^(i)) % vectorSize;
             //int reflected = (vectorSize-1) - index;
 
-            input[i][i] = 1;
-            input[i][j + vectorSize/2] = 1;
+            if (i < vectorSize/2)
+                input[i][i] = 1;
+            input[i][j] = 1;
             output[i][index] = 1;
 
 

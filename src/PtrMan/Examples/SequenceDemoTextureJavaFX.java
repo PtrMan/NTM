@@ -2,8 +2,6 @@ package Examples;
 
 import NTM2.NeuralTuringMachine;
 import javafx.animation.AnimationTimer;
-import javafx.animation.Interpolator;
-import javafx.animation.RotateTransition;
 import javafx.application.Application;
 import javafx.scene.*;
 import javafx.scene.image.PixelWriter;
@@ -13,12 +11,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
-import javafx.scene.shape.CullFace;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape3D;
-import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import org.javatuples.Pair;
 
 import java.util.ArrayDeque;
@@ -30,17 +24,17 @@ import java.util.ArrayDeque;
 // Display a rotating 3D box with a video projected onto its surface.
 public class SequenceDemoTextureJavaFX extends Application {
 
-    int vectorSize = 50;
+    int vectorSize = 20;
     private SequenceLearner sl;
     int inputs, outputs;
 
-    final int dataWindow = 300;
+    final int dataWindow = 200;
     int dataWidth;
     double[][] data = null;
     double mousePosX, mousePosY, mouseOldX, mouseOldY, mouseDeltaX, mouseDeltaY;
 
 
-    public final ArrayDeque<Runnable> queue = new ArrayDeque<>(dataWindow*2);
+    public final ArrayDeque<Runnable> queue = new ArrayDeque<>(dataWindow * 2);
     private WritableImage textureImage;
 
 
@@ -53,8 +47,7 @@ public class SequenceDemoTextureJavaFX extends Application {
                 Runnable r = queue.pollFirst();
                 r.run();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -68,7 +61,7 @@ public class SequenceDemoTextureJavaFX extends Application {
         int m = margin;
         for (int i = 0; i < dataWindow; i++) {
             for (int j = 0; j < dataWidth; j++) {
-                double v = data[i][j];
+                double v = data[j][i];
                 Color c = Color.hsb(90 * v, 0.85f, 0.85f * v);
                 //Color c = Color.gray(v);
                 wr.setColor(i + m, j + m, c);
@@ -81,7 +74,6 @@ public class SequenceDemoTextureJavaFX extends Application {
 
     @Override
     public void init() {
-
 
 
         sl = new SequenceDemoConsole(vectorSize) {
@@ -103,20 +95,21 @@ public class SequenceDemoTextureJavaFX extends Application {
 
                     final int tt = t;
 
-                    queue.add(() -> {
 
-                        double[] input = inputs[tt];
-                        double[] ideal = ideals[tt];
-                        double[] actual = output[tt].getOutput();
+                    double[] input = inputs[tt];
+                    double[] ideal = ideals[tt];
+                    double[] actual = output[tt].getOutput();
 
-                        pushLast(input, 0);
-                        pushLast(ideal, input.length + 1);
-                        pushLast(actual, input.length + 1 + ideal.length + 1);
+                    pushLast(input, 0);
+                    pushLast(ideal, input.length + 1);
+                    pushLast(actual, input.length + 1 + ideal.length + 1);
 
-                        commit();
 
-                    });
                 }
+
+                queue.add(() ->
+                                commit()
+                );
 
 
             }
@@ -127,24 +120,24 @@ public class SequenceDemoTextureJavaFX extends Application {
 
         dataWidth = inputs + 1 + outputs + 1 + outputs;
 
-        data = new double[dataWindow][dataWidth];
+        data = new double[dataWidth][dataWindow];
 
 
-        textureImage = new WritableImage(dataWindow+margin*2, dataWidth+margin*2);
+        textureImage = new WritableImage(dataWindow + margin * 2, dataWidth + margin * 2);
 
     }
 
-    int r = 0;
+
+
     public void pushLast(double[] p, int index) {
 
         for (double x : p) {
-            data[r][index++] = x;
+            double[] d = data[index++];
+            System.arraycopy(d, 0, d, 1, d.length-1);
+            d[0] = x;
         }
 
-        if (++r == data.length) r = 0; //wrap
     }
-
-
 
 
     private static final int SCENE_W = 800;
@@ -163,7 +156,7 @@ public class SequenceDemoTextureJavaFX extends Application {
 
         float scale = 16f;
         // create a 3D box shape on which to project the video.
-        Shape3D box = new Box(dataWindow*scale, dataWidth*scale, 1);
+        Shape3D box = new Box(dataWindow * scale, dataWidth * scale, 1);
         box.setTranslateX(SCENE_W / 2);
         box.setTranslateY(SCENE_H / 2);
 
@@ -172,7 +165,6 @@ public class SequenceDemoTextureJavaFX extends Application {
         box.setMaterial(material);
         //box.setCullFace(CullFace.BACK);
         material.setDiffuseMap(textureImage);
-
 
 
         AnimationTimer timer = new AnimationTimer() {
@@ -264,7 +256,7 @@ public class SequenceDemoTextureJavaFX extends Application {
             mouseDeltaY = (mousePosY - mouseOldY);
 
             double modifier = 10.0;
-            double modifierFactor = 0.1;
+            double modifierFactor = 0.5;
 
             if (me.isControlDown()) {
                 modifier = 0.1;
@@ -292,7 +284,6 @@ public class SequenceDemoTextureJavaFX extends Application {
         stage.show();
 
     }
-
 
 
     public static void main(String[] args) {
