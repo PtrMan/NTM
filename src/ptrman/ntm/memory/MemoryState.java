@@ -59,14 +59,22 @@ public class MemoryState
 
         final ContentAddressing[] ca = memory.getContentAddressing();
 
-        for (int i = 0;i < read.length;i++) {
-            read[i].backwardErrorPropagation();
 
-            for (int j = 0;j < read[i].head.addressingVector.length;j++) {
-                ca[i].content[j].grad += read[i].head.addressingVector[j].grad;
+        for (int i = 0;i < read.length;i++) {
+
+            final ReadData readI = read[i];
+            final ContentAddressing cai = ca[i];
+
+            readI.backwardErrorPropagation();
+
+
+            for (int j = 0;j < readI.head.addressingVector.length;j++) {
+
+
+                cai.content.gradAddSelf(j, readI.head.addressingVector[j].grad);
             }
 
-            ca[i].backwardErrorPropagation();
+            cai.backwardErrorPropagation();
         }
     }
 

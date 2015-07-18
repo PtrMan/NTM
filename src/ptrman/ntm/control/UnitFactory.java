@@ -1,7 +1,10 @@
 package ntm.control;
 
+//TODO replace these with UVector, UMatrix, and UCube which use arrays, not Unit instances
 public class UnitFactory {
-    public static Unit[] getVector(int vectorSize) {
+
+
+    @Deprecated public static Unit[] getVector(int vectorSize) {
         Unit[] vector = new Unit[vectorSize];
         for (int i = 0;i < vectorSize;i++) {
             vector[i] = new Unit(0.0);

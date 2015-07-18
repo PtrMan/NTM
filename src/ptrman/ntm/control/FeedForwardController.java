@@ -19,7 +19,7 @@ public class FeedForwardController
     }
 
     public int inputSize() {
-        return hidden.size();
+        return hidden.inputs();
     }
     public int outputSize() {
         return output.size();

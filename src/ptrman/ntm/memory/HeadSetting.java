@@ -61,7 +61,7 @@ public class HeadSetting
         addressingVector = UnitFactory.getVector(memoryColumnsN);
 
         for (int i = 0;i < memoryColumnsN;i++) {
-            addressingVector[i].value = contentAddressing.content[i].value;
+            addressingVector[i].value = contentAddressing.content.value(i);
         }
     }
 

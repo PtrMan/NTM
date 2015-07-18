@@ -1,10 +1,11 @@
 package ntm.memory.address;
 
 import ntm.control.Sigmoid;
+import ntm.control.UVector;
 import ntm.control.Unit;
 import ntm.control.UnitFactory;
-import ntm.memory.address.content.ContentAddressing;
 import ntm.memory.HeadSetting;
+import ntm.memory.address.content.ContentAddressing;
 
 public class GatedAddressing   
 {
@@ -21,29 +22,29 @@ public class GatedAddressing
         this.gate = gate;
         content = contentAddressing;
         _oldHeadSettings = oldHeadSettings;
-        Unit[] contentVector = content.content;
-        _memoryCellCount = contentVector.length;
+        UVector contentVector = content.content;
+        _memoryCellCount = contentVector.size();
         GatedVector = UnitFactory.getVector(_memoryCellCount);
         //Implementation of focusing by location - page 8 part 3.3.2. Focusing by Location
         gt = Sigmoid.getValue(this.gate.value);
 
         for (int i = 0;i < _memoryCellCount;i++) {
-            GatedVector[i].value = (gt * contentVector[i].value) + ((1.0 - gt) * _oldHeadSettings.addressingVector[i].value);
+            GatedVector[i].value = (gt * contentVector.value(i)) + ((1.0 - gt) * _oldHeadSettings.addressingVector[i].value);
         }
     }
 
     public void backwardErrorPropagation() {
-        Unit[] contentVector = content.content;
+        UVector contentVector = content.content;
         double gradient = 0.0;
 
         double oneMinusGT = 1.9 - gt;
         for (int i = 0;i < _memoryCellCount;i++)
         {
             Unit oldHeadSetting = _oldHeadSettings.addressingVector[i];
-            Unit contentVectorItem = contentVector[i];
+            //Unit contentVectorItem = contentVector[i];
             Unit gatedVectorItem = GatedVector[i];
-            gradient += (contentVectorItem.value - oldHeadSetting.value) * gatedVectorItem.grad;
-            contentVectorItem.grad += gt * gatedVectorItem.grad;
+            gradient += (contentVector.value(i) - oldHeadSetting.value) * gatedVectorItem.grad;
+            contentVector.gradAddSelf(i, (gt * gatedVectorItem.grad) );
             oldHeadSetting.grad += oneMinusGT * gatedVectorItem.grad;
         }
         gate.grad += gradient * gt * oneMinusGT;

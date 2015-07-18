@@ -26,7 +26,7 @@ import java.util.ArrayDeque;
 // Display a rotating 3D box with a video projected onto its surface.
 public class SequenceDemoTextureJavaFX extends Application {
 
-    int vectorSize = 20;
+    int vectorSize = 16;
     private SequenceLearner sl;
     int inputs, outputs;
 

@@ -26,6 +26,11 @@ public class SigmoidActivationFunction   implements IDifferentiableFunction
         return (_alpha * y * (1.0 - y));
     }
 
+
+    public double derivative(double grad, double y) {
+        return (grad * y * (1.0 - y));
+    }
+
 }
 
 
