@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 public class Head   
 {
+
     private final Unit[] _eraseVector;
     private final Unit[] _addVector;
     private final Unit[] _keyVector;
@@ -15,6 +16,7 @@ public class Head
     private final Unit _shift;
     private final Unit _gama;
     private final int width;
+
     //M
     public Unit[] getKeyVector() {
         return _keyVector;
@@ -72,7 +74,7 @@ public class Head
         return vector;
     }
 
-    public Unit get(int i) {
+    public Unit get(final int i) {
         if (i < width)
         {
             return _eraseVector[i];
@@ -88,27 +90,15 @@ public class Head
         {
             return _keyVector[i - (2 * width)];
         }
-         
-        if (i == width3)
-        {
-            return _beta;
+
+        switch (i - width3) {
+            case 0: return _beta;
+            case 1: return _gate;
+            case 2: return _shift;
+            case 3: return _gama;
         }
          
-        if (i == width3 + 1)
-        {
-            return _gate;
-        }
-         
-        if (i == width3 + 2)
-        {
-            return _shift;
-        }
-         
-        if (i == width3 + 3)
-        {
-            return _gama;
-        }
-         
+
         throw new IndexOutOfBoundsException("Index is out of range");
     }
 

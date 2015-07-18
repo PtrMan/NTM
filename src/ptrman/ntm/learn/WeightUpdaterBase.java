@@ -1,5 +1,6 @@
 package ntm.learn;
 
+import ntm.control.UVector;
 import ntm.control.Unit;
 
 public interface WeightUpdaterBase extends IWeightUpdater {
@@ -13,6 +14,7 @@ public interface WeightUpdaterBase extends IWeightUpdater {
             updateWeight(unit);
         }
     }
+
 
     @Override
     default void updateWeight(Unit[][] data) {

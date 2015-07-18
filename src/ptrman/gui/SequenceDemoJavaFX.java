@@ -9,7 +9,6 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import ntm.run.RunSequenceLearner;
 import ntm.run.SequenceLearner;
 import ntm.run.TrainingSequence;
 

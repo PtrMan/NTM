@@ -35,8 +35,8 @@ abstract public class SequenceLearner {
 
         //TODO remove rand
         final int memoryWidth = 32;
-        final int memoryHeight = 32;
-        final int numHeads = 2;
+        final int memoryHeight = 96;
+        final int numHeads = 1;
         final int controllerSize = 128;
 
         machine = new NeuralTuringMachine(
@@ -63,7 +63,7 @@ abstract public class SequenceLearner {
         // double changeMultiplier,
         // double changeAddConstant) {
         teacher = new BPTTTeacher(machine,
-                new RMSPropWeightUpdater(weightsCount, 0.5, 0.5, 0.02, 0.004));
+                new RMSPropWeightUpdater(weightsCount, 0.75, 0.25, 0.04, 0.001));
 
 
     }

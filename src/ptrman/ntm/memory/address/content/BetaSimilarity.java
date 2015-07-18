@@ -5,20 +5,23 @@ import ntm.control.Unit;
 //This class implements equation from page 8 - _b i exped to ensure that it will be positive
 public class BetaSimilarity   
 {
-    private final Unit _beta;
-    public SimilarityMeasure measure;
-    public final Unit BetaSimilarityMeasure;
-    //Key strength beta
-    private double _b;
+    public final Unit _beta;
+
+    public final SimilarityMeasure measure;
+
+    public final Unit betaSimilarity;
+
+    /** Key strength beta */
+    private double B;
 
     public BetaSimilarity(Unit beta, SimilarityMeasure m) {
         _beta = beta;
         measure = m;
         //Ensuring that beta will be positive
-        _b = Math.exp(_beta.value);
+        B = Math.exp(_beta.value);
 
-        BetaSimilarityMeasure = (m != null) ?
-                new Unit(_b * m.similarity.value)
+        betaSimilarity = (m != null) ?
+                new Unit(B * m.similarity.value)
                 :
                 new Unit(0.0);
     }
@@ -29,9 +32,9 @@ public class BetaSimilarity
 
     public void backwardErrorPropagation() {
         Unit similarity = measure.similarity;
-        double betaGradient = BetaSimilarityMeasure.grad;
-        _beta.grad += similarity.value * _b * betaGradient;
-        similarity.grad += _b * betaGradient;
+        double betaGradient = betaSimilarity.grad;
+        _beta.grad += similarity.value * B * betaGradient;
+        similarity.grad += B * betaGradient;
     }
 
     public static BetaSimilarity[][] getTensor2(int x, int y) {

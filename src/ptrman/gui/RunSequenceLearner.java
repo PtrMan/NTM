@@ -1,6 +1,9 @@
-package ntm.run;
+package gui;
 
 import ntm.NeuralTuringMachine;
+import ntm.run.SequenceGenerator;
+import ntm.run.SequenceLearner;
+import ntm.run.TrainingSequence;
 
 public class RunSequenceLearner extends SequenceLearner {
 
@@ -8,7 +11,7 @@ public class RunSequenceLearner extends SequenceLearner {
     boolean printSequences = false;
 
     public static void main(String[] args) throws Exception {
-        SequenceLearner s = new RunSequenceLearner(16);
+        SequenceLearner s = new RunSequenceLearner(24);
         while (true) {
             s.run();
         }

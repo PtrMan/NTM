@@ -9,6 +9,7 @@ public class UVector {
     public final double[] value;
     public final double[] grad;
 
+
     public UVector(int size) {
         value = new double[size];
         grad = new double[size];
@@ -56,5 +57,18 @@ public class UVector {
 
     public double gradAddSelf(int i, double dg) {
         return grad[i] += dg;
+    }
+
+    public void clearGrad() {
+        Arrays.fill(grad, 0);
+    }
+
+    public void setDelta(final double[] target) {
+        final double[] v = this.value;
+        final double[] g = this.grad;
+
+        for (int j = 0; j < v.length; j++) {
+            g[j] = v[j] - target[j];
+        }
     }
 }

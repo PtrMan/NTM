@@ -13,7 +13,7 @@ public class HiddenLayer
     public final int memoryUnitSizeM;
 
     //Controller hidden layer threshold weights
-    public final Unit[] hiddenLayerThresholds;
+    public final UVector hiddenLayerThresholds;
 
     //Weights from input to controller
     public final Unit[][] inputToHiddenLayerWeights;
@@ -32,10 +32,10 @@ public class HiddenLayer
         activation = new SigmoidActivationFunction();
         readDataToHiddenLayerWeights = UnitFactory.getTensor3(controllerSize,headCount,memoryUnitSizeM);
         inputToHiddenLayerWeights = UnitFactory.getTensor2(controllerSize,inputSize);
-        hiddenLayerThresholds = UnitFactory.getVector(controllerSize);
+        hiddenLayerThresholds = new UVector(controllerSize);
     }
 
-    private HiddenLayer(Unit[][][] readDataToHiddenLayerWeights, Unit[][] inputToHiddenLayerWeights, Unit[] hiddenLayerThresholds, UVector hiddenLayer, int inputSize, int headCount, int memoryUnitSizeM, IDifferentiableFunction activationFunction) {
+    private HiddenLayer(Unit[][][] readDataToHiddenLayerWeights, Unit[][] inputToHiddenLayerWeights, UVector hiddenLayerThresholds, UVector hiddenLayer, int inputSize, int headCount, int memoryUnitSizeM, IDifferentiableFunction activationFunction) {
         this.readDataToHiddenLayerWeights = readDataToHiddenLayerWeights;
         this.inputToHiddenLayerWeights = inputToHiddenLayerWeights;
         this.hiddenLayerThresholds = hiddenLayerThresholds;
@@ -80,7 +80,10 @@ public class HiddenLayer
             double sum = 0.0;
             sum = getReadDataContributionToHiddenLayer(neuronIndex, readData, sum);
             sum = getInputContributionToHiddenLayer(neuronIndex, input, sum);
-            sum = getThresholdContributionToHiddenLayer(neuronIndex,sum);
+
+            //getThresholdContributionToHiddenLayer
+            sum += hiddenLayerThresholds.value(neuronIndex);
+
             //Set new controller unit value
             neurons.value(neuronIndex, activation.value(sum));
         }
@@ -108,19 +111,15 @@ public class HiddenLayer
         return tempSum;
     }
 
-    private double getThresholdContributionToHiddenLayer(int neuronIndex, double tempSum) {
-        tempSum += hiddenLayerThresholds[neuronIndex].value;
-        return tempSum;
-    }
 
-    public void updateWeights(Consumer<Unit> updateAction) {
-        Consumer<Unit[]> vectorUpdateAction = Unit.getVectorUpdateAction(updateAction);
-        Consumer<Unit[][]> tensor2UpdateAction = Unit.getTensor2UpdateAction(updateAction);
-        Consumer<Unit[][][]> tensor3UpdateAction = Unit.getTensor3UpdateAction(updateAction);
-        tensor3UpdateAction.accept(readDataToHiddenLayerWeights);
-        tensor2UpdateAction.accept(inputToHiddenLayerWeights);
-        vectorUpdateAction.accept(hiddenLayerThresholds);
-    }
+//    public void updateWeights(Consumer<Unit> updateAction) {
+//        Consumer<Unit[]> vectorUpdateAction = Unit.getVectorUpdateAction(updateAction);
+//        Consumer<Unit[][]> tensor2UpdateAction = Unit.getTensor2UpdateAction(updateAction);
+//        Consumer<Unit[][][]> tensor3UpdateAction = Unit.getTensor3UpdateAction(updateAction);
+//        tensor3UpdateAction.accept(readDataToHiddenLayerWeights);
+//        tensor2UpdateAction.accept(inputToHiddenLayerWeights);
+//        vectorUpdateAction.accept(hiddenLayerThresholds);
+//    }
 
     public void updateWeights(IWeightUpdater weightUpdater) {
         weightUpdater.updateWeight(readDataToHiddenLayerWeights);
@@ -176,9 +175,10 @@ public class HiddenLayer
         }
     }
 
-    private void updateHiddenLayerThresholdsGradients(double[] hiddenLayerGradients) {
+    private void updateHiddenLayerThresholdsGradients(final double[] hiddenLayerGradients) {
+        final double[] hgrad = hiddenLayerThresholds.grad;
         for (int neuronIndex = 0;neuronIndex < neurons(); neuronIndex++) {
-            hiddenLayerThresholds[neuronIndex].grad += hiddenLayerGradients[neuronIndex];
+            hgrad[neuronIndex] += hiddenLayerGradients[neuronIndex];
         }
     }
 

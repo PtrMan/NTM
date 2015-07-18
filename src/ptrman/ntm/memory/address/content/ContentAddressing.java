@@ -1,7 +1,6 @@
 package ntm.memory.address.content;
 
 import ntm.control.UVector;
-import ntm.control.Unit;
 
 import java.util.function.Function;
 
@@ -15,15 +14,15 @@ public class ContentAddressing
         BetaSimilarities = betaSimilarities;
         content = new UVector(betaSimilarities.length);
         //Subtracting max increase numerical stability
-        double max = BetaSimilarities[0].BetaSimilarityMeasure.value;
+        double max = BetaSimilarities[0].betaSimilarity.value;
         for( BetaSimilarity iterationBetaSimilarity : betaSimilarities ) {
-            max = Math.max(max, iterationBetaSimilarity.BetaSimilarityMeasure.value);
+            max = Math.max(max, iterationBetaSimilarity.betaSimilarity.value);
         }
 
         double sum = 0.0;
         for (int i = 0;i < BetaSimilarities.length;i++) {
             BetaSimilarity unit = BetaSimilarities[i];
-            double weight = Math.exp(unit.BetaSimilarityMeasure.value - max);
+            double weight = Math.exp(unit.betaSimilarity.value - max);
             content.value(i, weight);
             sum += weight;
         }
@@ -40,7 +39,7 @@ public class ContentAddressing
         double gradient = content.sumGradientValueProducts();
 
         for (int i = 0;i < content.size();i++)        {
-            BetaSimilarities[i].BetaSimilarityMeasure.grad += (content.grad(i) - gradient) * content.value(i);
+            BetaSimilarities[i].betaSimilarity.grad += (content.grad(i) - gradient) * content.value(i);
         }
     }
 

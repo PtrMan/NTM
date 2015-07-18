@@ -4,11 +4,13 @@
 
 package ntm.learn;
 
+import ntm.control.UVector;
 import ntm.control.Unit;
 
 //SEE http://arxiv.org/pdf/1308.0850v5.pdf page 23
 public class RMSPropWeightUpdater implements WeightUpdaterBase {
     private double __GradientMomentum;
+
     public double getGradientMomentum() {
         return __GradientMomentum;
     }
@@ -54,7 +56,7 @@ public class RMSPropWeightUpdater implements WeightUpdaterBase {
         t = 0;
     }
 
-    @Override
+    @Deprecated @Override
     public void updateWeight(final Unit unit) {
 
         final double gm = getGradientMomentum();
@@ -72,6 +74,30 @@ public class RMSPropWeightUpdater implements WeightUpdaterBase {
         t++;
     }
 
+    @Override
+    public void updateWeight(final UVector unit) {
+
+        final double[] ugrads = unit.grad;
+        final double[] uvalue = unit.value;
+
+        for (int i = 0; i < unit.size(); i++) {
+
+            final double gm = getGradientMomentum();
+            final double ugrad = ugrads[i];
+            final double ugradGM = (1.0 - gm) * ugrad;
+
+            final double nt = n[t] = (gm * n[t]) + (ugradGM * ugrad);
+            final double gt = g[t] = (gm * g[t]) + ugradGM;
+
+            // +=
+            uvalue[i] +=
+                    //assignment:
+                    (delta[t] = (getDeltaMomentum() * delta[t]) - (getChangeMultiplier() * (ugrad / Math.sqrt(nt - (gt * gt) + getChangeAddConstant()))));
+
+            t++;
+        }
+
+    }
 }
 
 

@@ -159,6 +159,7 @@ public class NTMMemory {
         for (int j = 0; j < memoryWidth; j++) {
             double gradientErase = 0.0;
             double gradientAdd = 0.0;
+
             for (int k = 0; k < memoryHeight; k++) {
                 Unit[] row = data[k];
                 double itemGradient = row[j].grad;
@@ -171,10 +172,16 @@ public class NTMMemory {
 
                     gradientErase2 *= 1.0 - (heading[q].addressingVector[k].value * this.erase[q][j]);
                 }
-                gradientErase += itemGradient * gradientErase2 * (-addressingVectorItemValue);
+
+                final double gradientAddressing = itemGradient * addressingVectorItemValue;
+
+                gradientErase += gradientAddressing * (-gradientErase2);
+
                 //Gradient of Add vector
-                gradientAdd += itemGradient * addressingVectorItemValue;
+                gradientAdd += gradientAddressing;
             }
+
+            //TODO use activation derivative
             double e = erase[j];
             head.getEraseVector()[j].grad += gradientErase * e * (1.0 - e);
             double a = add[j];
@@ -216,7 +223,7 @@ public class NTMMemory {
     public void updateWeights(IWeightUpdater weightUpdater) {
         for (final BetaSimilarity[] betaSimilarities : oldSimilar) {
             for (final BetaSimilarity betaSimilarity : betaSimilarities) {
-                weightUpdater.updateWeight(betaSimilarity.BetaSimilarityMeasure);
+                weightUpdater.updateWeight(betaSimilarity.betaSimilarity);
             }
         }
         weightUpdater.updateWeight(data);

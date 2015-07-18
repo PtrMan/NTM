@@ -4,6 +4,7 @@
 
 package ntm.learn;
 
+import ntm.control.UVector;
 import ntm.control.Unit;
 
 public class GradientResetter implements WeightUpdaterBase {
@@ -15,6 +16,11 @@ public class GradientResetter implements WeightUpdaterBase {
     @Override
     public void updateWeight(Unit data) {
         data.grad = 0.0;
+    }
+
+    @Override
+    public void updateWeight(UVector data) {
+        data.clearGrad();
     }
 
 }

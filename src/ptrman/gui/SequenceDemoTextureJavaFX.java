@@ -13,7 +13,6 @@ import javafx.scene.shape.Box;
 import javafx.scene.shape.Shape3D;
 import javafx.stage.Stage;
 import ntm.NeuralTuringMachine;
-import ntm.run.RunSequenceLearner;
 import ntm.run.SequenceLearner;
 import ntm.run.TrainingSequence;
 
