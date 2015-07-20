@@ -4,6 +4,7 @@
 
 package ntm.learn;
 
+import ntm.control.UMatrix;
 import ntm.control.UVector;
 import ntm.control.Unit;
 

@@ -12,6 +12,11 @@ public class UnitFactory {
         return vector;
     }
 
+    public static UMatrix getMatrix(int x, int y) {
+        return new UMatrix(x, y);
+    }
+
+
     public static Unit[][] getTensor2(int x, int y) {
         Unit[][] tensor = new Unit[x][y];
         // ASK< needed? >

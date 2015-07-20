@@ -71,4 +71,15 @@ public class UVector {
             g[j] = v[j] - target[j];
         }
     }
+
+    public double sumDot(final double[] input) {
+        double s = 0;
+
+        final double[] v = this.value;
+
+        for (int j = 0; j < size(); j++) {
+            s += v[j] * input[j];
+        }
+        return s;
+    }
 }

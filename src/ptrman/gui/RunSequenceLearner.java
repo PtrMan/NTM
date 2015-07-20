@@ -11,7 +11,7 @@ public class RunSequenceLearner extends SequenceLearner {
     boolean printSequences = false;
 
     public static void main(String[] args) throws Exception {
-        SequenceLearner s = new RunSequenceLearner(24);
+        SequenceLearner s = new RunSequenceLearner(16);
         while (true) {
             s.run();
         }

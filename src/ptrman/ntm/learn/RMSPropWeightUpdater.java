@@ -80,9 +80,14 @@ public class RMSPropWeightUpdater implements WeightUpdaterBase {
         final double[] ugrads = unit.grad;
         final double[] uvalue = unit.value;
 
-        for (int i = 0; i < unit.size(); i++) {
+        final double changeConst = getChangeAddConstant();
+        final double changeMult = getChangeMultiplier();
+        final double deltaMomentum = getDeltaMomentum();
+        final double gm = getGradientMomentum();
 
-            final double gm = getGradientMomentum();
+        for (int i = 0; i < uvalue.length; i++) {
+
+
             final double ugrad = ugrads[i];
             final double ugradGM = (1.0 - gm) * ugrad;
 
@@ -92,7 +97,7 @@ public class RMSPropWeightUpdater implements WeightUpdaterBase {
             // +=
             uvalue[i] +=
                     //assignment:
-                    (delta[t] = (getDeltaMomentum() * delta[t]) - (getChangeMultiplier() * (ugrad / Math.sqrt(nt - (gt * gt) + getChangeAddConstant()))));
+                    (delta[t] = (deltaMomentum * delta[t]) - (changeMult * (ugrad / Math.sqrt(nt - (gt * gt) + changeConst))));
 
             t++;
         }

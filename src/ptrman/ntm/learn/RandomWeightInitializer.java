@@ -6,10 +6,10 @@ import ntm.control.Unit;
 import java.util.Random;
 
 public class RandomWeightInitializer implements WeightUpdaterBase {
-    private Random _rand;
+    private Random rng;
 
     public RandomWeightInitializer(Random rand) {
-        _rand = rand;
+        rng = rand;
     }
 
 
@@ -23,7 +23,8 @@ public class RandomWeightInitializer implements WeightUpdaterBase {
     }
 
     private double next() {
-        return _rand.nextDouble() - 0.5;
+        //return  rng.nextGaussian() - 0.5;
+        return rng.nextDouble() - 0.5;
     }
 
     @Override
