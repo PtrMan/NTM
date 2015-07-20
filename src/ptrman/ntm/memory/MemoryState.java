@@ -68,10 +68,10 @@ public class MemoryState
             readI.backwardErrorPropagation();
 
 
-            for (int j = 0;j < readI.head.addressingVector.length;j++) {
+            for (int j = 0;j < readI.head.addressingVector.size();j++) {
 
 
-                cai.content.gradAddSelf(j, readI.head.addressingVector[j].grad);
+                cai.content.gradAddSelf(j, readI.head.addressingVector.grad[j]);
             }
 
             cai.backwardErrorPropagation();

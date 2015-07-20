@@ -22,6 +22,7 @@ public class NTMMemory {
     public final int memoryHeight;
     public final int memoryWidth;
 
+    public static final double EPSILON = 0.0001;
 
     public NTMMemory(int memoryHeight, int memoryWidth, int heads) {
         this(null, memoryHeight, memoryWidth, new Head[heads],
@@ -92,7 +93,7 @@ public class NTMMemory {
                 double add = 0.0;
                 for (int k = 0; k < h; k++) {
                     HeadSetting headSetting = this.heading[k];
-                    double addressingValue = headSetting.addressingVector[i].value;
+                    double addressingValue = headSetting.addressingVector.value[i];
                     erase *= (1.0 - (addressingValue * this.erase[k][j]));
                     add += addressingValue * this.add[k][j];
                 }
@@ -142,7 +143,7 @@ public class NTMMemory {
                 for (int q = 0; q < h; q++) {
 
 
-                    gradient *= 1.0 - (heading[q].addressingVector[i].value * erase[q][j]);
+                    gradient *= 1.0 - (heading[q].addressingVector.value[i] * erase[q][j]);
                 }
                 oldDataVector[j].grad += gradient * newDataVector[j].grad;
             }
@@ -163,14 +164,14 @@ public class NTMMemory {
             for (int k = 0; k < memoryHeight; k++) {
                 Unit[] row = data[k];
                 double itemGradient = row[j].grad;
-                double addressingVectorItemValue = headSetting.addressingVector[k].value;
+                double addressingVectorItemValue = headSetting.addressingVector.value[k];
                 //Gradient of Erase vector
                 double gradientErase2 = p.data[k][j].value;
                 for (int q = 0; q < h; q++) {
                     if (q == headIndex)
                         continue;
 
-                    gradientErase2 *= 1.0 - (heading[q].addressingVector[k].value * this.erase[q][j]);
+                    gradientErase2 *= 1.0 - (heading[q].addressingVector.value[k] * this.erase[q][j]);
                 }
 
                 final double gradientAddressing = itemGradient * addressingVectorItemValue;
@@ -208,11 +209,11 @@ public class NTMMemory {
 
 
                     HeadSetting setting = heading[q];
-                    oldDataValue *= (1.0 - (setting.addressingVector[j].value * this.erase[q][k]));
+                    oldDataValue *= (1.0 - (setting.addressingVector.value[j] * this.erase[q][k]));
                 }
                 gradient += ((oldDataValue * (-erase[k])) + add[k]) * data.grad;
             }
-            headSetting.addressingVector[j].grad += gradient;
+            headSetting.addressingVector.grad[j] += gradient;
         }
     }
 

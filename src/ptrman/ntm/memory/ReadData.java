@@ -1,5 +1,6 @@
 package ntm.memory;
 
+import ntm.control.UVector;
 import ntm.control.Unit;
 
 import java.util.function.Function;
@@ -22,7 +23,7 @@ public class ReadData
         for (int i = 0;i < cellWidth;i++) {
             double temp = 0.0;
             for (int j = 0;j < cellHeight;j++) {
-                temp += head.addressingVector[j].value * mem.data[j][i].value;
+                temp += head.addressingVector.value[j] * mem.data[j][i].value;
             }
             //if (double.IsNaN(temp))
             //{
@@ -33,17 +34,18 @@ public class ReadData
     }
 
     public void backwardErrorPropagation() {
+        UVector addressingVectorUnit = head.addressingVector;
+
         for (int i = 0;i < cellHeight;i++) {
             double gradient = 0.0;
             Unit[] dataVector = memory.data[i];
-            Unit addressingVectorUnit = head.addressingVector[i];
             for (int j = 0;j < cellWidth;j++) {
                 double readUnitGradient = read[j].grad;
                 Unit dataUnit = dataVector[j];
                 gradient += readUnitGradient * dataUnit.value;
-                dataUnit.grad += readUnitGradient * addressingVectorUnit.value;
+                dataUnit.grad += readUnitGradient * addressingVectorUnit.value[i];
             }
-            addressingVectorUnit.grad += gradient;
+            addressingVectorUnit.grad[i] += gradient;
         }
     }
 

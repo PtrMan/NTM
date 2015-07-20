@@ -17,7 +17,7 @@ public class UnitFactory {
     }
 
 
-    public static Unit[][] getTensor2(int x, int y) {
+    @Deprecated public static Unit[][] getTensor2(int x, int y) {
         Unit[][] tensor = new Unit[x][y];
         // ASK< needed? >
         for (int i = 0;i < x;i++) {

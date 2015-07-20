@@ -1,16 +1,16 @@
 package ntm.memory;
 
+import ntm.control.UVector;
 import ntm.control.Unit;
 import ntm.control.UnitFactory;
-import ntm.memory.address.content.ContentAddressing;
 import ntm.memory.address.ShiftedAddressing;
+import ntm.memory.address.content.ContentAddressing;
 
-import java.util.function.Function;
 import java.util.stream.IntStream;
 
 public class HeadSetting   
 {
-    public final Unit[] addressingVector;
+    public final UVector addressingVector;
     public ShiftedAddressing shiftedAddressing;
     public final Unit gamma;
 
@@ -32,36 +32,33 @@ public class HeadSetting
 
 
         final int cellCount = getShiftedVector().length;
-        addressingVector = UnitFactory.getVector(cellCount);
+        addressingVector = new UVector(cellCount);
         //NO CLUE IN PAPER HOW TO IMPLEMENT - ONLY RESTRICTION IS THAT IT HAS TO BE LARGER THAN 1
         //(Page 9, Part 3.3.2. Focusing by location)
 
 
+        final double[] addr = addressingVector.value;
+
         final Unit[] sv = getShiftedVector();
         double sum = 0.0;
         for (int i = 0;i < cellCount; i++) {
-            Unit unit = addressingVector[i];
-            unit.value = Math.pow(sv[i].value, gammaIndex);
-            sum += unit.value;
+            sum +=
+                    (addr[i] = Math.pow(sv[i].value, gammaIndex));
         }
-
-        for (Unit unit : addressingVector) {
-            unit.value /= sum;
-            if (Double.isNaN(unit.value)) {
-                throw new RuntimeException("Should not be NaN - Error");
-            }
-             
-        }
+        //if (sum!=0) {
+            addressingVector.valueMultiplySelf(1.0/sum);
+        //}
     }
 
     public HeadSetting(Unit gamma, int memoryColumnsN, ContentAddressing contentAddressing) {
         this.gamma = gamma;
         this.shiftedAddressing = null;
 
-        addressingVector = UnitFactory.getVector(memoryColumnsN);
+        addressingVector = new UVector(memoryColumnsN);
 
+        final double[] addr = addressingVector.value;
         for (int i = 0;i < memoryColumnsN;i++) {
-            addressingVector[i].value = contentAddressing.content.value(i);
+            addr[i] = contentAddressing.content.value(i);
         }
     }
 
@@ -76,25 +73,30 @@ public class HeadSetting
 
         final double gammaIndex = getGammaIndex();
 
+        final double[] addrValue = addressingVector.value;
+        final double[] addrGrad = addressingVector.grad;
+
         IntStream.range(0, cells).forEach(i -> {
             Unit weight = sv[i];
             double weightValue = weight.value;
-            if (weightValue < EPSILON) {
+            if (weightValue < NTMMemory.EPSILON) {
                 return;
             }
 
+
             double gradient = 0.0;
+
             for (int j = 0; j < cells; j++) {
-                Unit dataWeight = addressingVector[j];
-                double dataWeightValue = dataWeight.value;
-                double dataWeightGradient = dataWeight.grad;
+
+                final double dataWeightValue = addrValue[j];
+                final double dataWeightGradient = addrGrad[j];
                 if (i == j) {
                     gradient += dataWeightGradient * (1.0 - dataWeightValue);
                 } else {
                     gradient -= dataWeightGradient * dataWeightValue;
                 }
             }
-            gradient = ((gradient * gammaIndex) / weightValue) * addressingVector[i].value;
+            gradient = ((gradient * gammaIndex) / weightValue) * addrValue[i];
             weight.grad += gradient;
             //******************************************************************
             lns[i] = Math.log(weightValue);
@@ -111,15 +113,13 @@ public class HeadSetting
         double gradient2 = 0.0;
 
 
-
         for (int i = 0;i < cells;i++) {
 
-            if (sv[i].value < EPSILON) {
+            if (sv[i].value < NTMMemory.EPSILON) {
                 continue;
             }
-             
-            Unit dataWeight = addressingVector[i];
-            gradient2 += dataWeight.grad * (dataWeight.value * (lns[i] - lnexps));
+
+            gradient2 += addrGrad[i] * (addrValue[i] * (lns[i] - lnexps));
         }
         gradient2 /= (1.0 + Math.exp(-gamma.value));
         gamma.grad += gradient2;
@@ -139,7 +139,7 @@ public class HeadSetting
         return vector;
     }
 
-    private static final double EPSILON = 0.001;
+
 }
 
 

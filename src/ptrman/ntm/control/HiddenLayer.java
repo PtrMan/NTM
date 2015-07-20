@@ -75,22 +75,30 @@ public class HiddenLayer
 
     //TODO refactor - do not use tempsum - but beware of rounding issues
     public void forwardPropagation(double[] input, ReadData[] readData) {
-        for (int neuronIndex = 0; neuronIndex < neurons(); neuronIndex++) {
+
+        final double[] nv = neurons.value;
+
+        final double[] hlt = hiddenLayerThresholds.value;
+
+        final int N = neurons();
+
+        for (int neuronIndex = 0; neuronIndex < N; neuronIndex++) {
             //Foreach neuron in hidden layer
             double sum = 0.0;
-            sum = getReadDataContributionToHiddenLayer(neuronIndex, readData, sum);
-            sum = getInputContributionToHiddenLayer(neuronIndex, input, sum);
+            sum += getReadDataContributionToHiddenLayer(neuronIndex, readData);
+            sum += getInputContributionToHiddenLayer(neuronIndex, input);
 
             //getThresholdContributionToHiddenLayer
-            sum += hiddenLayerThresholds.value(neuronIndex);
+            sum += hlt[neuronIndex];
 
             //Set new controller unit value
-            neurons.value(neuronIndex, activation.value(sum));
+            nv[neuronIndex] = activation.value(sum);
         }
     }
 
-    private double getReadDataContributionToHiddenLayer(int neuronIndex, ReadData[] readData, double tempSum) {
+    private double getReadDataContributionToHiddenLayer(int neuronIndex, ReadData[] readData) {
         Unit[][] readWeightsForEachHead = readDataToHiddenLayerWeights[neuronIndex];
+        double tempSum = 0;
         for (int headIndex = 0;headIndex < heads;headIndex++)
         {
             Unit[] headWeights = readWeightsForEachHead[headIndex];
@@ -103,9 +111,9 @@ public class HiddenLayer
         return tempSum;
     }
 
-    private double getInputContributionToHiddenLayer(int neuronIndex, double[] input, double tempSum) {
+    private double getInputContributionToHiddenLayer(int neuronIndex, double[] input) {
         UVector inputWeights = inputToHiddenLayerWeights.row(neuronIndex);
-        return tempSum + inputWeights.sumDot(input);
+        return inputWeights.sumDot(input);
     }
 
 

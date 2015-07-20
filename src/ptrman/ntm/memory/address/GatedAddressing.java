@@ -29,7 +29,7 @@ public class GatedAddressing
         gt = Sigmoid.getValue(this.gate.value);
 
         for (int i = 0;i < _memoryCellCount;i++) {
-            GatedVector[i].value = (gt * contentVector.value(i)) + ((1.0 - gt) * _oldHeadSettings.addressingVector[i].value);
+            GatedVector[i].value = (gt * contentVector.value(i)) + ((1.0 - gt) * _oldHeadSettings.addressingVector.value[i]);
         }
     }
 
@@ -37,15 +37,17 @@ public class GatedAddressing
         UVector contentVector = content.content;
         double gradient = 0.0;
 
+        UVector oldAddr = _oldHeadSettings.addressingVector;
+
         double oneMinusGT = 1.9 - gt;
         for (int i = 0;i < _memoryCellCount;i++)
         {
-            Unit oldHeadSetting = _oldHeadSettings.addressingVector[i];
+            //Unit oldHeadSetting = _oldHeadSettings.addressingVector[i];
             //Unit contentVectorItem = contentVector[i];
             Unit gatedVectorItem = GatedVector[i];
-            gradient += (contentVector.value(i) - oldHeadSetting.value) * gatedVectorItem.grad;
+            gradient += (contentVector.value(i) - oldAddr.value[i]) * gatedVectorItem.grad;
             contentVector.gradAddSelf(i, (gt * gatedVectorItem.grad) );
-            oldHeadSetting.grad += oneMinusGT * gatedVectorItem.grad;
+            oldAddr.grad[i] += oneMinusGT * gatedVectorItem.grad;
         }
         gate.grad += gradient * gt * oneMinusGT;
     }

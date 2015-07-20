@@ -37,7 +37,7 @@ abstract public class SequenceLearner {
         final int memoryWidth = 32;
         final int memoryHeight = 96;
         final int numHeads = 1;
-        final int controllerSize = 192;
+        final int controllerSize = 128;
 
         machine = new NeuralTuringMachine(
                 vectorSize,
