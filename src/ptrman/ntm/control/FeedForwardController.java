@@ -59,7 +59,7 @@ public class FeedForwardController
         hidden.updateWeights(weightUpdater);
     }
 
-    public void backwardErrorPropagation(double[] knownOutput, double[] input, ReadData[] reads) {
+    public final void backwardErrorPropagation(double[] knownOutput, double[] input, ReadData[] reads) {
         output.backwardErrorPropagation(knownOutput, hidden);
         hidden.backwardErrorPropagation(input, reads);
     }

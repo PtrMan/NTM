@@ -18,7 +18,7 @@ public class RunSequenceLearner extends SequenceLearner {
     }
 
     public RunSequenceLearner(int vectorSize) {
-        super(vectorSize);
+        super(vectorSize, 8, 32, 1, 64);
     }
 
     @Override

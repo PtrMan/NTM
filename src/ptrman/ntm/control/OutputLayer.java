@@ -96,6 +96,7 @@ public class OutputLayer {
 
     public void backwardErrorPropagation(final double[] knownOutput, final HiddenLayer hiddenLayer) {
 
+        final Head[] heads = this.heads;
 
         outputs.setDelta(knownOutput);
 
@@ -103,18 +104,24 @@ public class OutputLayer {
         double[] outGrad = outputs.grad;
 
         final int cs = this.controllerSize;
-        for (int j = 0; j < _outputSize; j++) {
+
+        Unit[][] hiddenToOutputLayerWeights = _hiddenToOutputLayerWeights;
+
+        int os = _outputSize;
+        for (int j = 0; j < os; j++) {
             //Output error backpropagation
 
             final double unitGrad = outGrad[j];
-            final Unit[] weights = _hiddenToOutputLayerWeights[j];
+
+            final Unit[] weights = hiddenToOutputLayerWeights[j];
 
 
             for (int i = 0; i < cs; i++) {
                 hiddenGrad[i] += weights[i].value * unitGrad;
             }
         }
-        for (int j = 0; j < heads.length; j++) {
+        int hl = heads.length;
+        for (int j = 0; j < hl; j++) {
             //Heads error backpropagation
             Head head = heads[j];
             Unit[][] weights = _hiddenToHeadsWeights[j];
@@ -129,7 +136,7 @@ public class OutputLayer {
 
         double[] hiddenValue = hiddenLayer.neurons.value;
 
-        for (int i = 0; i < _outputSize; i++) {
+        for (int i = 0; i < os; i++) {
             //Wyh1 error backpropagation
             Unit[] wyh1I = _hiddenToOutputLayerWeights[i];
             final double yGrad = outGrad[i];
@@ -139,9 +146,10 @@ public class OutputLayer {
             wyh1I[controllerSize].grad += yGrad;
         }
 
-        for (int i = 0; i < heads.length; i++) {
+        for (int i = 0; i < hl; i++) {
             //TODO refactor names
             //Wuh1 error backpropagation
+
             Head head = heads[i];
             final Unit[][] units = _hiddenToHeadsWeights[i];
             for (int j = 0; j < _headUnitSize; j++) {

@@ -26,7 +26,7 @@ abstract public class SequenceLearner {
     final int seed = 32702;
     protected Random rand = new Random(seed);
 
-    public SequenceLearner(int vectorSize) {
+    public SequenceLearner(int vectorSize, int memoryWidth, int memoryHeight, int numHeads, int controllerSize) {
 
         this.vectorSize = vectorSize;
 
@@ -34,10 +34,10 @@ abstract public class SequenceLearner {
 
 
         //TODO remove rand
-        final int memoryWidth = 32;
-        final int memoryHeight = 96;
-        final int numHeads = 1;
-        final int controllerSize = 128;
+//        final int memoryWidth = 32;
+//        final int memoryHeight = 96;
+//        final int numHeads = 1;
+//        final int controllerSize = 128;
 
         machine = new NeuralTuringMachine(
                 vectorSize,
@@ -63,7 +63,7 @@ abstract public class SequenceLearner {
         // double changeMultiplier,
         // double changeAddConstant) {
         teacher = new BPTTTeacher(machine,
-                new RMSPropWeightUpdater(weightsCount, 0.5, 0.25, 0.05, 0.001));
+                new RMSPropWeightUpdater(weightsCount, 0.25, 0.25, 0.01, 0.001));
 
 
     }

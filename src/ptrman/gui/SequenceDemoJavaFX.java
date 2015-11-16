@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by me on 7/5/15.
  */
-public class SequenceDemoJavaFX extends Application implements Runnable {
+abstract public class SequenceDemoJavaFX extends Application implements Runnable {
 
     int vectorSize = 6;
     private SequenceLearner sl;
@@ -29,7 +29,7 @@ public class SequenceDemoJavaFX extends Application implements Runnable {
     int dataWidth;
     double[][] data = null;
 
-    public static void main(String[] args) { launch(args);    }
+    //public static void main(String[] args) { launch(args);    }
 
 
     int sx, sy;

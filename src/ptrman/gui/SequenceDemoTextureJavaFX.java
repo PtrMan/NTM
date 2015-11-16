@@ -56,16 +56,25 @@ public class SequenceDemoTextureJavaFX extends Application {
 
     int margin = 1;
 
+    final ColorMatrix cm = new ColorMatrix(16,16,(x,y) -> {
+        return Color.hsb(180 * x, 0.85f, 0.85f * y);
+    });
+
     public void commit() {
         PixelWriter wr = textureImage.getPixelWriter();
 
         int m = margin;
-        for (int i = 0; i < dataWindow; i++) {
-            for (int j = 0; j < dataWidth; j++) {
-                double v = data[j][i];
-                Color c = Color.hsb(90 * v, 0.85f, 0.85f * v);
+        double[][] d = this.data;
+
+        for (int i = 0; i < dataWidth; i++) {
+
+            double[] di = d[i];
+            for (int j = 0; j < dataWindow; j++) {
+                double v = di[j];
+
+                Color c = cm.get((float)i/dataWindow, v);
                 //Color c = Color.gray(v);
-                wr.setColor(i + m, j + m, c);
+                wr.setColor(j + m, i + m, c);
 
             }
         }

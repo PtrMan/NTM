@@ -18,7 +18,7 @@ public class SigmoidActivationFunction   implements IDifferentiableFunction
 
     @Override
     public double value(double x) {
-        return 1.0 / (1.0 + Math.exp(-x * _alpha));
+        return Sigmoid.getValue(x, _alpha);
     }
 
     @Override
