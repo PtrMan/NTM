@@ -5,8 +5,8 @@ import ntm.control.Unit;
 
 import java.util.function.Function;
 
-public class ReadData   
-{
+/** TODO extend UVector for 'read' */
+public class ReadData  {
     public final HeadSetting head;
     public final Unit[] read;
     private final NTMMemory memory;
@@ -36,10 +36,19 @@ public class ReadData
     public void backwardErrorPropagation() {
         UVector addressingVectorUnit = head.addressingVector;
 
-        for (int i = 0;i < cellHeight;i++) {
+        final Unit[][] memData = memory.data;
+
+        int h = this.cellHeight;
+        int w = this.cellWidth;
+        Unit[] read = this.read;
+
+        for (int i = 0; i < h; i++) {
             double gradient = 0.0;
-            Unit[] dataVector = memory.data[i];
-            for (int j = 0;j < cellWidth;j++) {
+
+            Unit[] dataVector = memData[i];
+
+            for (int j = 0; j < w; j++) {
+
                 double readUnitGradient = read[j].grad;
                 Unit dataUnit = dataVector[j];
                 gradient += readUnitGradient * dataUnit.value;
@@ -49,6 +58,7 @@ public class ReadData
         }
     }
 
+    /** TODO return UMatrix of ReadData UVector's */
     public static ReadData[] getVector(NTMMemory memory, HeadSetting[] h) {
         int x = memory.headNum();
 

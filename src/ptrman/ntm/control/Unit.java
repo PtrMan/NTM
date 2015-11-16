@@ -2,10 +2,13 @@ package ntm.control;
 
 import java.util.function.Consumer;
 
-public class Unit   
-{
+public class Unit {
     public double value;
     public double grad;
+
+    public Unit() {
+
+    }
 
     public Unit(double value) {
         this.value = value;
@@ -42,7 +45,7 @@ public class Unit
         };
     }
 
-    public void setDelta(final double target) {
+    public final void setDelta(final double target) {
         grad = value - target;
     }
 

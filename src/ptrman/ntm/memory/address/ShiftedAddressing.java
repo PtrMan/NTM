@@ -35,7 +35,13 @@ public class ShiftedAddressing
 
         final double oneMinusSimj = (1.0 - simj);
 
-        conv = convToInt(convolutionDbl);
+        final int conv = this.conv = convToInt(convolutionDbl);
+
+        final int cells = this.cells;
+
+        Unit[] shifted = this.shifted;
+        Unit[] gated = this.gated;
+        final double simj = this.simj;
 
         for (int i = 0;i < cells;i++) {
 
@@ -48,7 +54,9 @@ public class ShiftedAddressing
 
 
             int imj = (int)((i + conv) % cells);
+
             Unit vectorItem = shifted[i];
+
 
             double v = vectorItem.value = (gated[imj].value * simj) +
                     (gated[(imj + 1) % cells].value * oneMinusSimj);
@@ -60,8 +68,12 @@ public class ShiftedAddressing
         }
     }
 
-    public int convToInt(double c) {
+    public static int convToInt(double c) {
+        //OPTION 1: hard floor
         return (int)c;
+
+        //OPTION 2: (soft) round
+        //return (int)Math.round(c);
     }
 
     public void backwardErrorPropagation() {

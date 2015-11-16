@@ -224,7 +224,7 @@ public class NTMMemory {
     public void updateWeights(IWeightUpdater weightUpdater) {
         for (final BetaSimilarity[] betaSimilarities : oldSimilar) {
             for (final BetaSimilarity betaSimilarity : betaSimilarities) {
-                weightUpdater.updateWeight(betaSimilarity.betaSimilarity);
+                weightUpdater.updateWeight(betaSimilarity);
             }
         }
         weightUpdater.updateWeight(data);

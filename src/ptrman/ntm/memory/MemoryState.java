@@ -1,6 +1,7 @@
 package ntm.memory;
 
 import javafx.util.Pair;
+import ntm.control.UVector;
 import ntm.control.Unit;
 import ntm.memory.address.GatedAddressing;
 import ntm.memory.address.Head;
@@ -67,11 +68,12 @@ public class MemoryState
 
             readI.backwardErrorPropagation();
 
+            UVector caiContent = cai.content;
 
-            for (int j = 0;j < readI.head.addressingVector.size();j++) {
+            int s = readI.head.addressingVector.size();
 
-
-                cai.content.gradAddSelf(j, readI.head.addressingVector.grad[j]);
+            for (int j = 0; j < s; j++) {
+                caiContent.gradAddSelf(j, readI.head.addressingVector.grad[j]);
             }
 
             cai.backwardErrorPropagation();
@@ -83,15 +85,19 @@ public class MemoryState
         final int memoryColumnsN = memory.memoryHeight;
         ReadData[] newReadDatas = new ReadData[headCount];
         HeadSetting[] newHeadSettings = new HeadSetting[headCount];
+
+        Unit[][] memoryData = memory.data;
+
         for (int i = 0;i < headCount;i++) {
             Head head = heads[i];
             BetaSimilarity[] similarities = new BetaSimilarity[memory.memoryHeight];
             for (int j = 0;j < memoryColumnsN;j++) {
-                Unit[] memoryColumn = memory.data[j];
 
+                Unit[] memoryColumn = memoryData[j];
+
+                CosineSimilarityFunction csf = new CosineSimilarityFunction();
                 similarities[j] = new BetaSimilarity(head.getBeta(),
-                        new SimilarityMeasure(new CosineSimilarityFunction(),
-                                head.getKeyVector(), memoryColumn));
+                        new SimilarityMeasure(csf, head.getKeyVector(), memoryColumn));
             }
             ContentAddressing ca = new ContentAddressing(similarities);
             GatedAddressing ga = new GatedAddressing(head.getGate(), ca, heading[i]);

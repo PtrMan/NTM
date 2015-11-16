@@ -14,15 +14,15 @@ public class ContentAddressing
         BetaSimilarities = betaSimilarities;
         content = new UVector(betaSimilarities.length);
         //Subtracting max increase numerical stability
-        double max = BetaSimilarities[0].betaSimilarity.value;
+        double max = BetaSimilarities[0].value;
         for( BetaSimilarity iterationBetaSimilarity : betaSimilarities ) {
-            max = Math.max(max, iterationBetaSimilarity.betaSimilarity.value);
+            max = Math.max(max, iterationBetaSimilarity.value);
         }
 
         double sum = 0.0;
         for (int i = 0;i < BetaSimilarities.length;i++) {
             BetaSimilarity unit = BetaSimilarities[i];
-            double weight = Math.exp(unit.betaSimilarity.value - max);
+            double weight = Math.exp(unit.value - max);
             content.value(i, weight);
             sum += weight;
         }
@@ -39,7 +39,7 @@ public class ContentAddressing
         double gradient = content.sumGradientValueProducts();
 
         for (int i = 0;i < content.size();i++)        {
-            BetaSimilarities[i].betaSimilarity.grad += (content.grad(i) - gradient) * content.value(i);
+            BetaSimilarities[i].grad += (content.grad(i) - gradient) * content.value(i);
         }
     }
 
