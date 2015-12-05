@@ -13,6 +13,7 @@ import javafx.scene.shape.Box;
 import javafx.scene.shape.Shape3D;
 import javafx.stage.Stage;
 import ntm.NeuralTuringMachine;
+import ntm.memory.address.Head;
 import ntm.run.SequenceLearner;
 import ntm.run.TrainingSequence;
 
@@ -84,7 +85,8 @@ public class SequenceDemoTextureJavaFX extends Application {
 
     @Override
     public void init() {
-
+        // must be the same as for NTM
+        int memoryWith = 8;
 
         sl = new RunSequenceLearner(vectorSize) {
 
@@ -110,11 +112,16 @@ public class SequenceDemoTextureJavaFX extends Application {
                     double[] input = inputs[tt];
                     double[] ideal = ideals[tt];
                     double[] actual = output[tt].getOutput();
+                    Head head = output[tt].getHeads()[0];
 
                     pushLast(input, 0);
                     pushLast(ideal, input.length + 1);
                     pushLast(actual, input.length + 1 + ideal.length + 1);
 
+                    for( int headDataIndex = 0; headDataIndex < memoryWith*2; headDataIndex++ ) {
+                        double headValue = head.get(headDataIndex).getValue() * 0.5f/*normalisation, arbitarly */;
+                        pushLast(new double[]{headValue}, input.length + 1 + ideal.length + 1 + actual.length + headDataIndex);
+                    }
 
                 }
 
@@ -129,7 +136,9 @@ public class SequenceDemoTextureJavaFX extends Application {
         inputs = sl.machine.inputSize();
         outputs = sl.machine.outputSize();
 
-        dataWidth = inputs + 1 + outputs + 1 + outputs;
+        // for now we are just interested in the two upper head regions with the size of memoryWidth
+        int headsSum = memoryWith*2;
+        dataWidth = inputs + 1 + outputs + 1 + outputs + headsSum;
 
         data = new double[dataWidth][dataWindow];
 

@@ -49,6 +49,9 @@ public class Unit {
         grad = value - target;
     }
 
+    public double getValue() {
+        return value;
+    }
 }
 
 

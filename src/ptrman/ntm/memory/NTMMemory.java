@@ -36,6 +36,11 @@ public class NTMMemory {
         return parent.get();
     }
 
+    // mainly for visualisation, but also useful for other introspective "mutations"
+    public Head getHead(int index) {
+        return heads[index];
+    }
+
     NTMMemory(HeadSetting[] heading, int memoryHeight, int memoryWidth, Head[] heads, Unit[][] data, NTMMemory parent) {
         this.memoryHeight = memoryHeight;
         this.memoryWidth = memoryWidth;
