@@ -118,9 +118,15 @@ public class SequenceDemoTextureJavaFX extends Application {
                     pushLast(ideal, input.length + 1);
                     pushLast(actual, input.length + 1 + ideal.length + 1);
 
-                    for( int headDataIndex = 0; headDataIndex < memoryWith*2; headDataIndex++ ) {
-                        double headValue = head.get(headDataIndex).getValue() * 0.5f/*normalisation, arbitarly */;
-                        pushLast(new double[]{headValue}, input.length + 1 + ideal.length + 1 + actual.length + headDataIndex);
+                    for( int headDataIndex = 0; headDataIndex < memoryWith; headDataIndex++ ) {
+                        double headEraseValue = head.get(headDataIndex).getValue();
+                        double headAddValue = head.get(headDataIndex + memoryWith).getValue();
+
+                        // after the NTM definition of write
+                        double headWriteValue = headEraseValue - headAddValue;
+
+                        headWriteValue = headWriteValue * 0.3f/*normalisation for display, arbitarly */;
+                        pushLast(new double[]{headWriteValue}, input.length + 1 + ideal.length + 1 + actual.length + headDataIndex);
                     }
 
                 }
